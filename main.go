@@ -44,9 +44,15 @@ type Record struct {
 	ItemUnitPrice		string `csv:"Lineitem price"`
 }
 
-type ZipTable struct {
-	Key int
+// The idea is to keep the keys for each order with their respective zip/temps
+type ZipTemp struct {
+	Keys []int
 	Zip string
+	Temp string
+}
+// Might not be necessary, we will see.
+type ZipTempTable struct {
+	ZipTemps []ZipTemp
 }
 		
 func main() {	
@@ -61,7 +67,22 @@ func firstFiveZip(s string) string {
 		}
 		i++
 	}
+	if len(s) < 5 {
+		z := "0"
+		s := z + s
+
+		return s
+	}
+
 	return s
+}
+
+func convertAllZips(r []*Record) []*Record {
+	for _, v := range r {		
+		zipFiveDig := firstFiveZip(v.PostalCode)
+		v.PostalCode = zipFiveDig
+	}
+	return r
 }
 
 func csvReader() {
@@ -76,13 +97,12 @@ func csvReader() {
 
 	if err := gocsv.UnmarshalFile(recordFile, &records); err != nil {
 		panic(err)
-	}
+	}	
 
-	for k, v := range records {		
-		zipFiveDig := firstFiveZip(v.PostalCode)
-		v.PostalCode = zipFiveDig
-		fmt.Printf("key: %v \n", k)
-		fmt.Printf("val: %v \n", v.PostalCode)
+	newRecords := convertAllZips(records)
+	
+	for _, v := range newRecords {
+		fmt.Printf("new: %v \n", v.PostalCode)
 	}
 }
  
