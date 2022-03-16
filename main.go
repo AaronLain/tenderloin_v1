@@ -23,7 +23,10 @@ func csvReader() {
 	// step 3: read all records
 	records, _ := reader.ReadAll()
 
+	for k, v := range records {
 
-	fmt.Println(records)
+		fmt.Printf("key: %v \n", k)
+		fmt.Printf("val: %v \n", v)
+	}
 }
  
