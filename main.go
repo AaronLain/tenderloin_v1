@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"github.com/gocarina/gocsv"
+//	"unicode/utf8"
 )
 // Shipsitation requires the following fields:
 // Order Number, Order Date, Date Paid, Order Total,
@@ -42,9 +43,25 @@ type Record struct {
 	ItemName			string `csv:"Lineitem name"`
 	ItemUnitPrice		string `csv:"Lineitem price"`
 }
+
+type ZipTable struct {
+	Key int
+	Zip string
+}
 		
 func main() {	
 	csvReader()
+}
+
+func firstFiveZip(s string) string {
+	i := 0
+	for j := range s {
+		if i == 5 {
+			return s[:j]
+		}
+		i++
+	}
+	return s
 }
 
 func csvReader() {
@@ -61,10 +78,11 @@ func csvReader() {
 		panic(err)
 	}
 
-
 	for k, v := range records {		
+		zipFiveDig := firstFiveZip(v.PostalCode)
+		v.PostalCode = zipFiveDig
 		fmt.Printf("key: %v \n", k)
-		fmt.Printf("val: %v \n", v.OrderDate)
+		fmt.Printf("val: %v \n", v.PostalCode)
 	}
 }
  
