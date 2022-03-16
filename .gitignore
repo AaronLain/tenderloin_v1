@@ -4,7 +4,9 @@
 *.dll
 *.so
 *.dylib
-
+*.swp
+*.swo
+*.csv
 # Test binary, built with `go test -c`
 *.test
 
@@ -13,6 +15,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-
+.DS_Store
 # Go workspace file
 go.work

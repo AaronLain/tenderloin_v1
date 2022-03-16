@@ -1,29 +1,30 @@
 package main
 
 import (
-	"encoding/csv"
+	zip "ajl/tenderloin/zip"
 	"fmt"
 	"os"
+
+	"github.com/gocarina/gocsv"
 )
 
-func main() {
-	csvReader()
-}	
-
 func csvReader() {
-	// step 1: open file
-	recordFile, err := os.Open("./orders_test.csv")
+
+	recordFile, err := os.Open("./Orders_test_2.csv")
 	if err != nil {
 		fmt.Println("Error occured! ::", err)
 	}
+	defer recordFile.Close()
 
-	// step 2: initialize reader
-	reader := csv.NewReader(recordFile)
+	records := []*zip.Record{}
 
-	// step 3: read all records
-	records, _ := reader.ReadAll()
+	if err := gocsv.UnmarshalFile(recordFile, &records); err != nil {
+		panic(err)
+	}
 
-
-	fmt.Println(records)
+	zip.CreateRawZipTable(records)
 }
- 
+
+func main() {
+	csvReader()
+}
