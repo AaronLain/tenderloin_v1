@@ -27,9 +27,14 @@ type Record struct {
 	State           string `csv:"Shipping Province"`
 	PostalCode      string `csv:"Shipping Zip"`
 	CountryCode     string `csv:"Shipping Country"`
-	ItemSKU         string `csv:"Lineitem sku"`
-	ItemName        string `csv:"Lineitem name"`
-	ItemUnitPrice   string `csv:"Lineitem price"`
+	LineItems       []LineItem
+}
+
+type LineItem struct {
+	OrderNum      string `csv:"Name"`
+	ItemSKU       string `csv:"Lineitem sku"`
+	ItemName      string `csv:"Lineitem name"`
+	ItemUnitPrice string `csv:"Lineitem price"`
 }
 
 // The idea is to keep the keys for each order with their respective zip/temps
