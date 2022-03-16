@@ -1,6 +1,7 @@
 package main
 
 import (
+	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
 	"fmt"
 	"os"
@@ -16,13 +17,13 @@ func csvReader() {
 	}
 	defer recordFile.Close()
 
-	records := []*zip.Record{}
+	records := []*orders.OrderRecord{}
 
 	if err := gocsv.UnmarshalFile(recordFile, &records); err != nil {
 		panic(err)
 	}
 
-	zip.CreateRawZipTable(records)
+	zip.CreateZipTable(records)
 }
 
 func main() {
