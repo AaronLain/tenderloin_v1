@@ -49,13 +49,14 @@ func PrintHello() {
 }
 
 func FirstFiveZip(s string) string {
-	i := 0
-	for j := range s {
+	counter := 0
+	for i := range s {
 		if i == 5 {
-			return s[:j]
+			return s[:i]
 		}
-		i++
+		counter++
 	}
+	// Adds a zero to NE zips that start with 0
 	if len(s) < 5 {
 		z := "0"
 		s := z + s
@@ -73,3 +74,23 @@ func ConvertAllZips(r []*Record) []*Record {
 	}
 	return r
 }
+
+func CreateRawZipTable(r []*Record) []ZipTemp {
+	records := ConvertAllZips(r)
+	zipTempTable := []ZipTemp{}
+	// zipTempUnit := ZipTemp{}
+	for k, v := range records {
+		z := ZipTemp{}
+		z.Keys = append(z.Keys, k)
+		z.Zip = v.PostalCode
+		zipTempTable = append(zipTempTable, z)
+		fmt.Println(z)
+	}
+	fmt.Printf("%T", zipTempTable)
+	return zipTempTable
+}
+
+// add
+//func SortZipTable(z []*ZipTemp) []ZipTemp {
+
+//}
