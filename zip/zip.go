@@ -48,7 +48,8 @@ func FirstFiveZip(s string) string {
 }
 
 func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
-	for _, v := range r {
+	for i, v := range r {
+		fmt.Printf("records: %d %v\n", i, v.PostalCode)
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
 			zipFiveDig := FirstFiveZip(v.PostalCode)
@@ -62,22 +63,33 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 // TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
 // There should only be 1 entry per Zip, with the list of indexes attached
 
-//func SortZipTable(z []*ZipTemp) []ZipTemp {
+// []ZipTemp
+func SortZipTable(z []ZipTemp) {
+	zipTable := z
+	for _, v := range zipTable {
+		thisZip := v.Zip
+		fmt.Printf("thisZip: %v\n", thisZip)
 
-//}
+	}
+	fmt.Printf("ZipTable: %v", zipTable)
+}
 
 //[]ZipTemp
 func CreateZipTable(r []*o.OrderRecord) {
 	records := ConvertAllZips(r)
+
 	zipTempTable := []ZipTemp{}
 	// zipTempUnit := ZipTemp{}
 	for i, v := range records {
 		z := ZipTemp{}
-		z.Keys = append(z.Keys, i)
-		z.Zip = v.PostalCode
-		zipTempTable = append(zipTempTable, z)
-		fmt.Println(z)
+		//TODO ADD [] of ORDER NUMBERS FOR VERIFICATION
+		if !isStringEmpty(v.PostalCode) {
+			z.Keys = append(z.Keys, i)
+			z.Zip = v.PostalCode
+			zipTempTable = append(zipTempTable, z)
+		}
+		continue
 	}
-	fmt.Printf("%T", zipTempTable)
-	// return zipTempTable
+	//fmt.Printf("%T", zipTempTable)
+	SortZipTable(zipTempTable)
 }
