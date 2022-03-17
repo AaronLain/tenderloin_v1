@@ -1,47 +1,22 @@
 package zip
 
-import "fmt"
+import (
+	o "ajl/tenderloin/orders"
+	"fmt"
+	"sort"
+)
 
-type Record struct {
-	OrderNum        string `csv:"Name"`
-	OrderDate       string `csv:"Created at"`
-	DatePaid        string `csv:"Paid at"`
-	Total           string `csv:"Total"`
-	AmountPaid      string `csv:"Total"`
-	Tax             string `csv:"Taxes"`
-	ShippingPaid    string `csv:"Shipping"`
-	ShippingService string `csv:"Shipping Method"`
-	CustomField1    string
-	CustomField2    string `csv:"Tags"`
-	CustomFieldF3   string
-	Source          string `csv:"Source"`
-	BuyerFullName   string `csv:"Billing Name"`
-	BuyerEmail      string `csv:"Email"`
-	BuyerPhone      string `csv:"Billing Phone"`
-	RecFullName     string `csv:"Shipping Name"`
-	RecPhone        string `csv:"Shipping Phone"`
-	RecCompany      string `csv:"Shipping Company"`
-	AddressLine1    string `csv:"Shipping Address1"`
-	AddressLine2    string `csv:"Shipping Address2"`
-	City            string `csv:"Shipping City"`
-	State           string `csv:"Shipping Province"`
-	PostalCode      string `csv:"Shipping Zip"`
-	CountryCode     string `csv:"Shipping Country"`
-	LineItems       []LineItem
-}
-
-type LineItem struct {
-	OrderNum      string `csv:"Name"`
-	ItemSKU       string `csv:"Lineitem sku"`
-	ItemName      string `csv:"Lineitem name"`
-	ItemUnitPrice string `csv:"Lineitem price"`
-}
+type Keys []int
 
 // The idea is to keep the keys for each order with their respective zip/temps
 type ZipTemp struct {
-	Keys []int
+	Keys
 	Zip  string
 	Temp string
+}
+
+type ZipTempBool interface {
+	exists()
 }
 
 // Might not be necessary, we will see.
@@ -49,53 +24,116 @@ type ZipTempTable struct {
 	ZipTemps []ZipTemp
 }
 
-func PrintHello() {
-	fmt.Println("Hello, Modules! This is mypackage speaking!")
+// Apparently this is how we have to do things
+// but at least it (probably) works!
+func isStringEmpty(str ...string) bool {
+	for _, s := range str {
+		if s == "" {
+			return true
+		}
+	}
+	return false
 }
 
-func FirstFiveZip(s string) string {
+// keeps only base zip
+func FirstFiveZip(zip string) string {
 	counter := 0
-	for i := range s {
+	for i := range zip {
 		if i == 5 {
-			return s[:i]
+			return zip[:i]
 		}
 		counter++
 	}
 	// Adds a zero to NE zips that start with 0
-	if len(s) < 5 {
+	if len(zip) < 5 {
 		z := "0"
-		s := z + s
+		s := z + zip
 
 		return s
 	}
-
-	return s
+	return zip
 }
 
-func ConvertAllZips(r []*Record) []*Record {
+func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	for _, v := range r {
-		zipFiveDig := FirstFiveZip(v.PostalCode)
-		v.PostalCode = zipFiveDig
+		// Skips rows that are line items (empty fields)
+		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
+			zipFiveDig := FirstFiveZip(v.PostalCode)
+			v.PostalCode = zipFiveDig
+		}
+		continue
 	}
 	return r
 }
 
-func CreateRawZipTable(r []*Record) []ZipTemp {
-	records := ConvertAllZips(r)
-	zipTempTable := []ZipTemp{}
-	// zipTempUnit := ZipTemp{}
-	for k, v := range records {
-		z := ZipTemp{}
-		z.Keys = append(z.Keys, k)
-		z.Zip = v.PostalCode
-		zipTempTable = append(zipTempTable, z)
-		fmt.Println(z)
+func containsKey(a, b Keys) bool {
+	sort.Ints(a)
+	sort.Ints(b)
+
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
 	}
-	fmt.Printf("%T", zipTempTable)
-	return zipTempTable
+	return true
 }
 
-// add
-//func SortZipTable(z []*ZipTemp) []ZipTemp {
+// TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
+// There should only be 1 entry per Zip, with the list of indexes attached
 
-//}
+// []ZipTemp
+func SortZipTable(z []ZipTemp) {
+	zipTable := z
+	newZipTable := []ZipTemp{}
+	lastRow := len(zipTable) - 1
+	for i, v := range zipTable {
+		//fmt.Printf("i: %v\n ", i)
+		thisRow := lastRow - i
+		thisZip := v.Zip
+		theseKeys := v.Keys
+		ztemp := ZipTemp{}
+		if thisRow <= lastRow {
+			for _, vv := range zipTable {
+				noDupeKeys := !containsKey(vv.Keys, theseKeys)
+				// Need to make sure no duplicate keys are added (probably refactor later)
+				//fmt.Printf("ii: %v\n ", ii)
+				if thisZip == vv.Zip {
+					if noDupeKeys {
+						theseKeys = append(theseKeys, vv.Keys...)
+					}
+
+					ztemp.Keys = theseKeys
+
+					if ztemp.Zip != thisZip {
+						ztemp.Zip = thisZip
+						newZipTable = append(newZipTable, ztemp)
+					}
+				}
+			}
+		}
+	}
+	fmt.Printf("newZipTable: %v \n", newZipTable)
+
+}
+
+// fmt.Printf("ZipTable: %v", zipTable)
+
+//[]ZipTemp
+func CreateZipTable(r []*o.OrderRecord) {
+	records := ConvertAllZips(r)
+
+	zipTempTable := []ZipTemp{}
+	// zipTempUnit := ZipTemp{}
+	for i, v := range records {
+		z := ZipTemp{}
+		//TODO ADD [] of ORDER NUMBERS FOR VERIFICATION
+		if !isStringEmpty(v.PostalCode) {
+			z.Keys = append(z.Keys, i)
+			z.Zip = v.PostalCode
+			zipTempTable = append(zipTempTable, z)
+		}
+		continue
+	}
+	//fmt.Printf("%T", zipTempTable)
+	SortZipTable(zipTempTable)
+}
