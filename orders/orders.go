@@ -25,6 +25,9 @@ type OrderRecord struct {
 	State           string `csv:"Shipping Province"`
 	PostalCode      string `csv:"Shipping Zip"`
 	CountryCode     string `csv:"Shipping Country"`
+	ItemSKU         string `csv:"Lineitem sku"`
+	ItemName        string `csv:"Lineitem name"`
+	ItemUnitPrice   string `csv:"Lineitem price"`
 	LineItems       []LineItem
 }
 
@@ -35,4 +38,32 @@ type LineItem struct {
 	ItemUnitPrice string `csv:"Lineitem price"`
 }
 
-func 
+// []*OrderRecord
+// func AddLineItems(records []*OrderRecord) {
+// 	// newRecords := []OrderRecord{}
+// 	lastRow := records[len(records)-1]
+
+// 	for i, v := range records {
+// 		order := v
+
+// 		fmt.Printf("i: %d\n", i)
+// 		fmt.Printf("v: %v\n", v)
+
+// 		// Runs until the last row
+// 		if lastRow != nil {
+// 			if (isStringEmpty(order.BuyerFullName)) && (isStringEmpty(order.RecFullName)) {
+// 				thisOrder := order
+// 				nextOrder := records[i+1]
+// 				prevOrder := records[i-1]
+// 				lineItem := []LineItem{}
+// 				// if the next order has these empty fields, it is a line item and should be added to the order
+// 				if (isStringEmpty(nextOrder.BuyerFullName)) && (isStringEmpty(nextOrder.RecFullName)) {
+// 					thisOrder.LineItem = append(nextOrder.LineItems)
+// 				}
+
+// 			}
+// 		}
+
+// 	}
+// 	fmt.Printf("Last Row %T\n", lastRow)
+// }

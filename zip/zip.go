@@ -17,6 +17,17 @@ type ZipTempTable struct {
 	ZipTemps []ZipTemp
 }
 
+// Apparently this is how we have to do things
+// but at least it (probably) works!
+func isStringEmpty(str ...string) bool {
+	for _, s := range str {
+		if s == "" {
+			return true
+		}
+	}
+	return false
+}
+
 // keeps only base zip
 func FirstFiveZip(s string) string {
 	counter := 0
@@ -38,8 +49,12 @@ func FirstFiveZip(s string) string {
 
 func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	for _, v := range r {
-		zipFiveDig := FirstFiveZip(v.PostalCode)
-		v.PostalCode = zipFiveDig
+		// Skips rows that are line items (empty fields)
+		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
+			zipFiveDig := FirstFiveZip(v.PostalCode)
+			v.PostalCode = zipFiveDig
+		}
+		continue
 	}
 	return r
 }
@@ -51,17 +66,18 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 
 //}
 
-func CreateZipTable(r []*o.OrderRecord) []ZipTemp {
+//[]ZipTemp
+func CreateZipTable(r []*o.OrderRecord) {
 	records := ConvertAllZips(r)
 	zipTempTable := []ZipTemp{}
 	// zipTempUnit := ZipTemp{}
-	for k, v := range records {
+	for i, v := range records {
 		z := ZipTemp{}
-		z.Keys = append(z.Keys, k)
+		z.Keys = append(z.Keys, i)
 		z.Zip = v.PostalCode
 		zipTempTable = append(zipTempTable, z)
 		fmt.Println(z)
 	}
 	fmt.Printf("%T", zipTempTable)
-	return zipTempTable
+	// return zipTempTable
 }

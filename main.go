@@ -2,7 +2,6 @@ package main
 
 import (
 	orders "ajl/tenderloin/orders"
-	zip "ajl/tenderloin/zip"
 	"fmt"
 	"os"
 
@@ -23,7 +22,9 @@ func csvReader() {
 		panic(err)
 	}
 
-	zip.CreateZipTable(records)
+	// cleanRecords := zip.CreateZipTable(records)
+
+	orders.AddLineItems(records)
 }
 
 func main() {
