@@ -5,11 +5,18 @@ import (
 	"fmt"
 )
 
+type Keys []int
+
 // The idea is to keep the keys for each order with their respective zip/temps
 type ZipTemp struct {
-	Keys []int
+	Id int
+	Keys
 	Zip  string
 	Temp string
+}
+
+type ZipTempBool interface {
+	exists()
 }
 
 // Might not be necessary, we will see.
@@ -47,9 +54,14 @@ func FirstFiveZip(s string) string {
 	return s
 }
 
+//
+// func compareZipTemps(a, b ZipTemp) bool {
+
+// }
+
 func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
-	for i, v := range r {
-		fmt.Printf("records: %d %v\n", i, v.PostalCode)
+	for _, v := range r {
+		//fmt.Printf("records: %d %v\n", i, v.PostalCode)
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
 			zipFiveDig := FirstFiveZip(v.PostalCode)
@@ -60,19 +72,68 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	return r
 }
 
+func containsKey(z []int, c []int) bool {
+	if z == c {
+		return true
+	}
+	if a.X != b.X || a.Y != b.Y {
+		return false
+	}
+	if len(a.Z) != len(b.Z) || len(a.M) != len(b.M) {
+		return false
+	}
+	for i, v := range a.Z {
+		if b.Z[i] != v {
+			return false
+		}
+	}
+	for k, v := range a.M {
+		if b.M[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
 // TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
 // There should only be 1 entry per Zip, with the list of indexes attached
 
 // []ZipTemp
 func SortZipTable(z []ZipTemp) {
 	zipTable := z
-	for _, v := range zipTable {
+	newZipTable := []ZipTemp{}
+	lastRow := len(zipTable) - 1
+	fmt.Printf("last row: %v \n", lastRow)
+	for i, v := range zipTable {
+		thisRow := len(zipTable) - i
+		fmt.Printf("this row: %v \n", thisRow)
 		thisZip := v.Zip
-		fmt.Printf("thisZip: %v\n", thisZip)
+		theseKeys := v.Keys
+		ztemp := ZipTemp{}
+		if thisRow <= lastRow {
+			for _, vv := range zipTable {
+				// Need to make sure no duplicate keys are added (probably refactor later)
+				if thisZip == vv.Zip {
+					if !containsKey(theseKeys, vv.Keys) {
+						theseKeys = append(theseKeys, vv.Keys...)
+					}
 
+					ztemp.Keys = theseKeys
+
+					if ztemp.Zip != thisZip {
+						ztemp.Zip = thisZip
+						newZipTable = append(newZipTable, ztemp)
+					}
+
+				}
+			}
+		}
 	}
-	fmt.Printf("ZipTable: %v", zipTable)
+	fmt.Printf("newZipTable: %v \n", newZipTable)
+
 }
+
+// fmt.Printf("ZipTable: %v", zipTable)
 
 //[]ZipTemp
 func CreateZipTable(r []*o.OrderRecord) {
