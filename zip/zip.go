@@ -3,13 +3,13 @@ package zip
 import (
 	o "ajl/tenderloin/orders"
 	"fmt"
+	"sort"
 )
 
 type Keys []int
 
 // The idea is to keep the keys for each order with their respective zip/temps
 type ZipTemp struct {
-	Id int
 	Keys
 	Zip  string
 	Temp string
@@ -36,32 +36,26 @@ func isStringEmpty(str ...string) bool {
 }
 
 // keeps only base zip
-func FirstFiveZip(s string) string {
+func FirstFiveZip(zip string) string {
 	counter := 0
-	for i := range s {
+	for i := range zip {
 		if i == 5 {
-			return s[:i]
+			return zip[:i]
 		}
 		counter++
 	}
 	// Adds a zero to NE zips that start with 0
-	if len(s) < 5 {
+	if len(zip) < 5 {
 		z := "0"
-		s := z + s
+		s := z + zip
 
 		return s
 	}
-	return s
+	return zip
 }
-
-//
-// func compareZipTemps(a, b ZipTemp) bool {
-
-// }
 
 func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	for _, v := range r {
-		//fmt.Printf("records: %d %v\n", i, v.PostalCode)
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
 			zipFiveDig := FirstFiveZip(v.PostalCode)
@@ -72,23 +66,12 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	return r
 }
 
-func containsKey(z []int, c []int) bool {
-	if z == c {
-		return true
-	}
-	if a.X != b.X || a.Y != b.Y {
-		return false
-	}
-	if len(a.Z) != len(b.Z) || len(a.M) != len(b.M) {
-		return false
-	}
-	for i, v := range a.Z {
-		if b.Z[i] != v {
-			return false
-		}
-	}
-	for k, v := range a.M {
-		if b.M[k] != v {
+func containsKey(a, b Keys) bool {
+	sort.Ints(a)
+	sort.Ints(b)
+
+	for i, v := range a {
+		if v != b[i] {
 			return false
 		}
 	}
@@ -103,18 +86,19 @@ func SortZipTable(z []ZipTemp) {
 	zipTable := z
 	newZipTable := []ZipTemp{}
 	lastRow := len(zipTable) - 1
-	fmt.Printf("last row: %v \n", lastRow)
 	for i, v := range zipTable {
-		thisRow := len(zipTable) - i
-		fmt.Printf("this row: %v \n", thisRow)
+		//fmt.Printf("i: %v\n ", i)
+		thisRow := lastRow - i
 		thisZip := v.Zip
 		theseKeys := v.Keys
 		ztemp := ZipTemp{}
 		if thisRow <= lastRow {
 			for _, vv := range zipTable {
+				noDupeKeys := !containsKey(vv.Keys, theseKeys)
 				// Need to make sure no duplicate keys are added (probably refactor later)
+				//fmt.Printf("ii: %v\n ", ii)
 				if thisZip == vv.Zip {
-					if !containsKey(theseKeys, vv.Keys) {
+					if noDupeKeys {
 						theseKeys = append(theseKeys, vv.Keys...)
 					}
 
@@ -124,7 +108,6 @@ func SortZipTable(z []ZipTemp) {
 						ztemp.Zip = thisZip
 						newZipTable = append(newZipTable, ztemp)
 					}
-
 				}
 			}
 		}
