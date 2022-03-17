@@ -17,10 +17,6 @@ type ZipTempTable struct {
 	ZipTemps []ZipTemp
 }
 
-func PrintHello() {
-	fmt.Println("Hello, Modules! This is mypackage speaking!")
-}
-
 // keeps only base zip
 func FirstFiveZip(s string) string {
 	counter := 0
@@ -37,7 +33,6 @@ func FirstFiveZip(s string) string {
 
 		return s
 	}
-
 	return s
 }
 
@@ -48,6 +43,13 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	}
 	return r
 }
+
+// TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
+// There should only be 1 entry per Zip, with the list of indexes attached
+
+//func SortZipTable(z []*ZipTemp) []ZipTemp {
+
+//}
 
 func CreateZipTable(r []*o.OrderRecord) []ZipTemp {
 	records := ConvertAllZips(r)
@@ -63,10 +65,3 @@ func CreateZipTable(r []*o.OrderRecord) []ZipTemp {
 	fmt.Printf("%T", zipTempTable)
 	return zipTempTable
 }
-
-// TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
-// There should only be 1 entry per Zip, with the list of indexes attached
-
-//func SortZipTable(z []*ZipTemp) []ZipTemp {
-
-//}
