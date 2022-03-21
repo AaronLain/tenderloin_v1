@@ -4,15 +4,16 @@ import (
 	o "ajl/tenderloin/orders"
 	"fmt"
 	"sort"
+	"unicode/utf8"
 )
 
 type Keys []int
 
 // The idea is to keep the keys for each order with their respective zip/temps
 type ZipTemp struct {
-	Keys
-	Zip  string
-	Temp string
+	Zip      string
+	Temp     string
+	OrderNum []string
 }
 
 type ZipTempBool interface {
@@ -83,40 +84,48 @@ func containsKey(a, b Keys) bool {
 
 // []ZipTemp
 func SortZipTable(z []ZipTemp) {
-	zipTable := z
-	newZipTable := []ZipTemp{}
-	lastRow := len(zipTable) - 1
-	for i, v := range zipTable {
-		//fmt.Printf("i: %v\n ", i)
-		thisRow := lastRow - i
-		thisZip := v.Zip
-		theseKeys := v.Keys
-		ztemp := ZipTemp{}
-		if thisRow <= lastRow {
-			for _, vv := range zipTable {
-				noDupeKeys := !containsKey(vv.Keys, theseKeys)
-				// Need to make sure no duplicate keys are added (probably refactor later)
-				//fmt.Printf("ii: %v\n ", ii)
-				if thisZip == vv.Zip {
-					if noDupeKeys {
-						theseKeys = append(theseKeys, vv.Keys...)
-					}
-
-					ztemp.Keys = theseKeys
-
-					if ztemp.Zip != thisZip {
-						ztemp.Zip = thisZip
-						newZipTable = append(newZipTable, ztemp)
-					}
-				}
-			}
-		}
+	m := make(map[string][]ZipTemp)
+	for _, o := range z {
+		m[o.Zip] = append(m[o.Zip], o)
+		fmt.Printf("o: %v \n", o)
 	}
-	fmt.Printf("newZipTable: %v \n", newZipTable)
+	fmt.Printf("newZipTable: %v \n", m)
 
 }
 
-// fmt.Printf("ZipTable: %v", zipTable)
+//  zipTable := z
+// newZipTable := []ZipTemp{}
+// lastRow := len(zipTable) - 1
+// for i, v := range zipTable {
+// 	//fmt.Printf("i: %v\n ", i)
+// 	thisRow := lastRow - i
+// 	thisZip := v.Zip
+// 	theseKeys := v.Keys
+// 	ztemp := ZipTemp{}
+// 	if thisRow <= lastRow {
+// 		for _, vv := range zipTable {
+// 			noDupeKeys := !containsKey(vv.Keys, theseKeys)
+// 			// Need to make sure no duplicate keys are added (probably refactor later)
+// 			if thisZip == vv.Zip {
+// 				if noDupeKeys {
+// 					theseKeys = append(theseKeys, vv.Keys...)
+// 				}
+
+// 				ztemp.Keys = theseKeys
+
+// 				if ztemp.Zip != thisZip {
+// 					ztemp.Zip = thisZip
+// 					newZipTable = append(newZipTable, ztemp)
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+func trimFirstRune(s string) string {
+	_, i := utf8.DecodeRuneInString(s)
+	return s[i:]
+}
 
 //[]ZipTemp
 func CreateZipTable(r []*o.OrderRecord) {
@@ -124,16 +133,18 @@ func CreateZipTable(r []*o.OrderRecord) {
 
 	zipTempTable := []ZipTemp{}
 	// zipTempUnit := ZipTemp{}
-	for i, v := range records {
+	for _, v := range records {
 		z := ZipTemp{}
 		//TODO ADD [] of ORDER NUMBERS FOR VERIFICATION
 		if !isStringEmpty(v.PostalCode) {
-			z.Keys = append(z.Keys, i)
 			z.Zip = v.PostalCode
+			// Make sure we trim the octothorpe from Order Number
+			z.OrderNum = append(z.OrderNum, trimFirstRune(v.OrderNum))
 			zipTempTable = append(zipTempTable, z)
 		}
 		continue
 	}
+
 	//fmt.Printf("%T", zipTempTable)
 	SortZipTable(zipTempTable)
 }
