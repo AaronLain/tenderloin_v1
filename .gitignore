@@ -7,7 +7,8 @@ orders/api.go
 *.dylib
 *.swp
 *.swo
-*.csv
+zip/ZipGeoCode2.csv
+Orders_test_2.csv
 # Test binary, built with `go test -c`
 *.test
 

@@ -91,5 +91,4 @@ type WeatherData struct {
 	Timezone    int
 	ID          int
 	Name        string
-	Cod         int
 }

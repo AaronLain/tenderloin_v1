@@ -159,6 +159,25 @@ func GetTemps(r []*o.OrderRecord) {
 
 }
 
+func longitude(input string) string {
+
+	lon1 := "lon="
+	lon2 := input
+	lon3 := "&"
+	output := lon1 + lon2 + lon3
+
+	return output
+}
+
+func latitude(input string) string {
+	lat1 := "lat="
+	lat2 := input
+	lat3 := "&"
+	output := lat1 + lat2 + lat3
+
+	return output
+}
+
 // string
 func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
@@ -167,8 +186,8 @@ func tempCheck(gc GeoCode) {
 	// ALSO This needs to run at 60 req/minute
 	// whether that's a quick burst of 60 and a pause
 	// or one req every ~1.1 seconds
-	lat := "lat=35&"
-	lon := "lon=139&"
+	lat := latitude(gc.Lat)
+	lon := longitude(gc.Lon)
 	s := "https://api.openweathermap.org/data/2.5/weather?"
 
 	parsedUrl, err := url.Parse(s)
@@ -191,5 +210,5 @@ func tempCheck(gc GeoCode) {
 		panic(err)
 	}
 
-	fmt.Printf("respons: %v \n", weather)
+	fmt.Printf("response: %v \n", weather)
 }
