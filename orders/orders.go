@@ -28,7 +28,6 @@ type OrderRecord struct {
 	ItemSKU         string `csv:"Lineitem sku"`
 	ItemName        string `csv:"Lineitem name"`
 	ItemUnitPrice   string `csv:"Lineitem price"`
-	LineItems       []LineItem
 }
 
 type LineItem struct {

@@ -164,6 +164,7 @@ func GetTemps(r []*o.OrderRecord) {
 func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
+	// TODO Make lat & lon editable variables
 	lat := "lat=35&"
 	lon := "lon=139&"
 	s := "https://api.openweathermap.org/data/2.5/weather?"
