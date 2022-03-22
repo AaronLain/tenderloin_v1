@@ -3,26 +3,25 @@ package zip
 import (
 	o "ajl/tenderloin/orders"
 	"fmt"
-	"sort"
+	"os"
 	"unicode/utf8"
+
+	"github.com/gocarina/gocsv"
 )
 
-type Keys []int
+type OrderNum []string
 
 // The idea is to keep the keys for each order with their respective zip/temps
 type ZipTemp struct {
-	Zip      string
-	Temp     string
-	OrderNum []string
+	Zip  string
+	Temp string
+	OrderNum
 }
 
-type ZipTempBool interface {
-	exists()
-}
-
-// Might not be necessary, we will see.
-type ZipTempTable struct {
-	ZipTemps []ZipTemp
+type GeoZip struct {
+	ZipCode string `csv:"ZIP"`
+	Lat     string `csv:"LAT"`
+	Lon     string `csv:"LNG"`
 }
 
 // Apparently this is how we have to do things
@@ -67,17 +66,33 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	return r
 }
 
-func containsKey(a, b Keys) bool {
-	sort.Ints(a)
-	sort.Ints(b)
-
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
+func geocodeZips() []*GeoZip {
+	geoZipFile, err := os.Open("./zip/ZipGeoCode.csv")
+	if err != nil {
+		fmt.Println("Error occured! ::", err)
 	}
-	return true
+	defer geoZipFile.Close()
+
+	geoZips := []*GeoZip{}
+
+	if err := gocsv.UnmarshalFile(geoZipFile, &geoZips); err != nil {
+		panic(err)
+	}
+
+	return geoZips
 }
+
+// func containsKey(a, b Keys) bool {
+// 	sort.Ints(a)
+// 	sort.Ints(b)
+
+// 	for i, v := range a {
+// 		if v != b[i] {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
 // TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
 // There should only be 1 entry per Zip, with the list of indexes attached
@@ -146,5 +161,10 @@ func CreateZipTable(r []*o.OrderRecord) {
 	}
 
 	//fmt.Printf("%T", zipTempTable)
-	SortZipTable(zipTempTable)
+	//SortZipTable(zipTempTable)
+	zz := geocodeZips()
+
+	for _, o := range zz {
+		fmt.Printf("geocodeZip: %v \n", o)
+	}
 }
