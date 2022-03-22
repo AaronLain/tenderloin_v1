@@ -30,6 +30,7 @@ type OrderRecord struct {
 	ItemUnitPrice   string `csv:"Lineitem price"`
 }
 
+// Probably need to get rid of this?
 type LineItem struct {
 	OrderNum      string `csv:"Name"`
 	ItemSKU       string `csv:"Lineitem sku"`
@@ -37,6 +38,7 @@ type LineItem struct {
 	ItemUnitPrice string `csv:"Lineitem price"`
 }
 
+// Weather Data Structure
 type Coordinates struct {
 	Lat int
 	Lon int
