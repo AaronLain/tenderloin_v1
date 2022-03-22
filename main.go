@@ -23,7 +23,7 @@ func csvReader() {
 		panic(err)
 	}
 
-	zip.CreateZipTable(records)
+	zip.GetTemps(records)
 
 }
 
