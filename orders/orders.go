@@ -91,33 +91,3 @@ type WeatherData struct {
 	Name        string
 	Cod         int
 }
-
-// []*OrderRecord
-// func AddLineItems(records []*OrderRecord) {
-// 	// newRecords := []OrderRecord{}
-// 	lastRow := records[len(records)-1]
-
-// 	for i, v := range records {
-// 		order := v
-
-// 		fmt.Printf("i: %d\n", i)
-// 		fmt.Printf("v: %v\n", v)
-
-// 		// Runs until the last row
-// 		if lastRow != nil {
-// 			if (isStringEmpty(order.BuyerFullName)) && (isStringEmpty(order.RecFullName)) {
-// 				thisOrder := order
-// 				nextOrder := records[i+1]
-// 				prevOrder := records[i-1]
-// 				lineItem := []LineItem{}
-// 				// if the next order has these empty fields, it is a line item and should be added to the order
-// 				if (isStringEmpty(nextOrder.BuyerFullName)) && (isStringEmpty(nextOrder.RecFullName)) {
-// 					thisOrder.LineItem = append(nextOrder.LineItems)
-// 				}
-
-// 			}
-// 		}
-
-// 	}
-// 	fmt.Printf("Last Row %T\n", lastRow)
-// }
