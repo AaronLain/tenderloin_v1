@@ -4,6 +4,9 @@ import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
 	"fmt"
+	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"unicode/utf8"
 )
@@ -17,10 +20,9 @@ type ZipTemp struct {
 	OrderNum
 }
 
-type GeoZip struct {
-	ZipCode string `csv:"ZIP"`
-	Lat     string `csv:"LAT"`
-	Lon     string `csv:"LNG"`
+type GeoCode struct {
+	Lat string `csv:"LAT"`
+	Lon string `csv:"LNG"`
 }
 
 // Apparently this is how we have to do things
@@ -142,14 +144,15 @@ func trimFirstRune(s string) string {
 }
 
 //[]GeoZip
-func find(records [][]string, val string, col int) {
+func find(records [][]string, val string, col int) GeoCode {
+	geoCode := GeoCode{}
 	for _, row := range records {
 		if row[col] == val {
-			fmt.Printf("row: %v \n", row)
+			geoCode.Lat = row[1]
+			geoCode.Lon = row[2]
 		}
-		continue
 	}
-
+	return geoCode
 }
 
 // func find(records [][]string, val string, col int) {
@@ -170,44 +173,65 @@ func GetTemps(r []*o.OrderRecord) {
 
 	// zipTempTable := []ZipTemp{}
 	// zipTempUnit := ZipTemp{}
-	for _, order := range orders {
-		iceProfile := "0"
-		if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
-			thisOrder := o.OrderRecord{
-				OrderNum:        order.OrderNum,
-				OrderDate:       order.OrderDate,
-				DatePaid:        order.DatePaid,
-				Total:           order.Total,
-				AmountPaid:      order.AmountPaid,
-				Tax:             order.Tax,
-				ShippingPaid:    order.ShippingPaid,
-				ShippingService: order.ShippingService,
-				CustomField1:    order.CustomField1,
-				CustomField2:    order.CustomField2,
-				CustomField3:    iceProfile,
-				Source:          order.Source,
-				BuyerFullName:   order.BuyerFullName,
-				BuyerEmail:      order.BuyerEmail,
-				BuyerPhone:      order.BuyerPhone,
-				RecPhone:        order.RecPhone,
-				City:            order.City,
-				State:           order.State,
-				PostalCode:      order.PostalCode,
-				ItemSKU:         order.ItemSKU,
-				ItemUnitPrice:   order.ItemUnitPrice,
-				ItemName:        order.ItemName,
+	for i, order := range orders {
+		if i <= 2 {
+			iceProfile := "0"
+			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
+				thisOrder := o.OrderRecord{
+					OrderNum:        order.OrderNum,
+					OrderDate:       order.OrderDate,
+					DatePaid:        order.DatePaid,
+					Total:           order.Total,
+					AmountPaid:      order.AmountPaid,
+					Tax:             order.Tax,
+					ShippingPaid:    order.ShippingPaid,
+					ShippingService: order.ShippingService,
+					CustomField1:    order.CustomField1,
+					CustomField2:    order.CustomField2,
+					CustomField3:    iceProfile,
+					Source:          order.Source,
+					BuyerFullName:   order.BuyerFullName,
+					BuyerEmail:      order.BuyerEmail,
+					BuyerPhone:      order.BuyerPhone,
+					RecPhone:        order.RecPhone,
+					City:            order.City,
+					State:           order.State,
+					PostalCode:      order.PostalCode,
+					ItemSKU:         order.ItemSKU,
+					ItemUnitPrice:   order.ItemUnitPrice,
+					ItemName:        order.ItemName,
+				}
+
+				if !isStringEmpty(order.PostalCode) {
+					gz := find(geoZips, order.PostalCode, 0)
+					tempCheck(gz)
+					newOrders = append(newOrders, thisOrder)
+				}
+
 			}
 
-			find(geoZips, order.PostalCode, 0)
-			thisOrder.PostalCode = "touched by an angel (func)"
-			// row := find(geoZips, v.PostalCode, 0)
-			newOrders = append(newOrders, thisOrder)
 			// fmti.Printf("row %v \n", row)
 			//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
 		}
 
 	}
 
-	fmt.Printf("newRecords: %v \n", newOrders)
+	fmt.Printf("newOrders: %v \n", newOrders)
 
+}
+
+// string
+func tempCheck(gc GeoCode) {
+	apiKey := o.GetKey()
+	s := "https://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid="
+	parsedUrl, err := url.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("url scheme: %v \n", parsedUrl.Scheme)
+	resp, err := http.Get(parsedUrl.String() + apiKey)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("respons: %v \n", resp)
 }
