@@ -162,13 +162,15 @@ func GetTemps(r []*o.OrderRecord) {
 // string
 func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
-	s := "https://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid="
+	lat := "lat=35&"
+	lon := "lon=139&"
+	s := "https://api.openweathermap.org/data/2.5/weather?"
 	parsedUrl, err := url.Parse(s)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("url scheme: %v \n", parsedUrl.Scheme)
-	resp, err := http.Get(parsedUrl.String() + apiKey)
+	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey)
 	if err != nil {
 		log.Fatalln(err)
 	}
