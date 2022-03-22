@@ -3,8 +3,9 @@ package zip
 import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -162,6 +163,7 @@ func GetTemps(r []*o.OrderRecord) {
 // string
 func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
+	weather := o.WeatherData{}
 	lat := "lat=35&"
 	lon := "lon=139&"
 	s := "https://api.openweathermap.org/data/2.5/weather?"
@@ -169,10 +171,21 @@ func tempCheck(gc GeoCode) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("url scheme: %v \n", parsedUrl.Scheme)
+
 	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
-	fmt.Printf("respons: %v \n", resp)
+
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal([]byte(respJSON), &weather)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("respons: %v \n", weather)
 }

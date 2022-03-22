@@ -38,6 +38,61 @@ type LineItem struct {
 	ItemUnitPrice string `csv:"Lineitem price"`
 }
 
+type Coordinates struct {
+	Lat int
+	Lon int
+}
+
+type Weather []struct {
+	ID          int
+	weatherMain string
+	Description string
+	Icon        string
+}
+
+type Main struct {
+	Temp      float32
+	FeelsLike float32
+	TempMin   float32
+	TempMax   float32
+	Pressure  int
+	Humidity  int
+}
+
+type Clouds struct {
+	All int
+}
+
+type Sys struct {
+	Type    int
+	ID      int
+	Country string
+	Sunrise int
+	Sunset  int
+}
+
+type Wind struct {
+	Speed float32
+	Deg   int
+	Gust  float32
+}
+
+type WeatherData struct {
+	Coordinates Coordinates
+	Weather     Weather
+	Base        string
+	Main        Main
+	Visibility  int
+	Wind        Wind
+	Clouds      Clouds
+	Dt          int
+	Sys         Sys
+	Timezone    int
+	ID          int
+	Name        string
+	Cod         int
+}
+
 // []*OrderRecord
 // func AddLineItems(records []*OrderRecord) {
 // 	// newRecords := []OrderRecord{}
