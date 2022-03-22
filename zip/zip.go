@@ -2,11 +2,10 @@ package zip
 
 import (
 	o "ajl/tenderloin/orders"
+	"encoding/csv"
 	"fmt"
 	"os"
 	"unicode/utf8"
-
-	"github.com/gocarina/gocsv"
 )
 
 type OrderNum []string
@@ -66,16 +65,15 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	return r
 }
 
-func geocodeZips() []*GeoZip {
-	geoZipFile, err := os.Open("./zip/ZipGeoCode.csv")
+func geocodeZips() [][]string {
+	orderCsv, err := os.Open("./zip/ZipGeoCode.csv")
 	if err != nil {
 		fmt.Println("Error occured! ::", err)
 	}
-	defer geoZipFile.Close()
+	defer orderCsv.Close()
 
-	geoZips := []*GeoZip{}
-
-	if err := gocsv.UnmarshalFile(geoZipFile, &geoZips); err != nil {
+	geoZips, err := csv.NewReader(orderCsv).ReadAll()
+	if err != nil {
 		panic(err)
 	}
 
@@ -137,34 +135,79 @@ func SortZipTable(z []ZipTemp) {
 // 	}
 // }
 
+// remove octothorpe (first rune) from OrderNum
 func trimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
 	return s[i:]
 }
 
-//[]ZipTemp
-func CreateZipTable(r []*o.OrderRecord) {
-	records := ConvertAllZips(r)
-
-	zipTempTable := []ZipTemp{}
-	// zipTempUnit := ZipTemp{}
-	for _, v := range records {
-		z := ZipTemp{}
-		//TODO ADD [] of ORDER NUMBERS FOR VERIFICATION
-		if !isStringEmpty(v.PostalCode) {
-			z.Zip = v.PostalCode
-			// Make sure we trim the octothorpe from Order Number
-			z.OrderNum = append(z.OrderNum, trimFirstRune(v.OrderNum))
-			zipTempTable = append(zipTempTable, z)
+//[]GeoZip
+func find(records [][]string, val string, col int) {
+	for _, row := range records {
+		if row[col] == val {
+			fmt.Printf("row: %v \n", row)
 		}
 		continue
 	}
 
-	//fmt.Printf("%T", zipTempTable)
-	//SortZipTable(zipTempTable)
-	zz := geocodeZips()
+}
 
-	for _, o := range zz {
-		fmt.Printf("geocodeZip: %v \n", o)
+// func find(records [][]string, val string, col int) {
+// 	//newGZ := GeoZip{}
+// 	for _, row := range records {
+// 		if row[col] == val {
+// 			fmt.Printf("row: %v", row)
+// 		}
+// 	}
+
+// }
+
+//[]*o.OrderRecord
+func GetTemps(r []*o.OrderRecord) {
+	orders := ConvertAllZips(r)
+	geoZips := geocodeZips()
+	newOrders := []o.OrderRecord{}
+
+	// zipTempTable := []ZipTemp{}
+	// zipTempUnit := ZipTemp{}
+	for _, order := range orders {
+		iceProfile := "0"
+		if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
+			thisOrder := o.OrderRecord{
+				OrderNum:        order.OrderNum,
+				OrderDate:       order.OrderDate,
+				DatePaid:        order.DatePaid,
+				Total:           order.Total,
+				AmountPaid:      order.AmountPaid,
+				Tax:             order.Tax,
+				ShippingPaid:    order.ShippingPaid,
+				ShippingService: order.ShippingService,
+				CustomField1:    order.CustomField1,
+				CustomField2:    order.CustomField2,
+				CustomField3:    iceProfile,
+				Source:          order.Source,
+				BuyerFullName:   order.BuyerFullName,
+				BuyerEmail:      order.BuyerEmail,
+				BuyerPhone:      order.BuyerPhone,
+				RecPhone:        order.RecPhone,
+				City:            order.City,
+				State:           order.State,
+				PostalCode:      order.PostalCode,
+				ItemSKU:         order.ItemSKU,
+				ItemUnitPrice:   order.ItemUnitPrice,
+				ItemName:        order.ItemName,
+			}
+
+			find(geoZips, order.PostalCode, 0)
+			thisOrder.PostalCode = "touched by an angel (func)"
+			// row := find(geoZips, v.PostalCode, 0)
+			newOrders = append(newOrders, thisOrder)
+			// fmti.Printf("row %v \n", row)
+			//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
+		}
+
 	}
+
+	fmt.Printf("newRecords: %v \n", newOrders)
+
 }
