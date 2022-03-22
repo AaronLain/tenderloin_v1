@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"unicode/utf8"
 )
 
 type OrderNum []string
@@ -82,21 +81,6 @@ func geocodeZips() [][]string {
 	return geoZips
 }
 
-// func containsKey(a, b Keys) bool {
-// 	sort.Ints(a)
-// 	sort.Ints(b)
-
-// 	for i, v := range a {
-// 		if v != b[i] {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
-
-// TODO Sort Zip Table so ZipTemp contains a list of indexes per zip code
-// There should only be 1 entry per Zip, with the list of indexes attached
-
 // []ZipTemp
 func SortZipTable(z []ZipTemp) {
 	m := make(map[string][]ZipTemp)
@@ -106,41 +90,6 @@ func SortZipTable(z []ZipTemp) {
 	}
 	fmt.Printf("newZipTable: %v \n", m)
 
-}
-
-//  zipTable := z
-// newZipTable := []ZipTemp{}
-// lastRow := len(zipTable) - 1
-// for i, v := range zipTable {
-// 	//fmt.Printf("i: %v\n ", i)
-// 	thisRow := lastRow - i
-// 	thisZip := v.Zip
-// 	theseKeys := v.Keys
-// 	ztemp := ZipTemp{}
-// 	if thisRow <= lastRow {
-// 		for _, vv := range zipTable {
-// 			noDupeKeys := !containsKey(vv.Keys, theseKeys)
-// 			// Need to make sure no duplicate keys are added (probably refactor later)
-// 			if thisZip == vv.Zip {
-// 				if noDupeKeys {
-// 					theseKeys = append(theseKeys, vv.Keys...)
-// 				}
-
-// 				ztemp.Keys = theseKeys
-
-// 				if ztemp.Zip != thisZip {
-// 					ztemp.Zip = thisZip
-// 					newZipTable = append(newZipTable, ztemp)
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// remove octothorpe (first rune) from OrderNum
-func trimFirstRune(s string) string {
-	_, i := utf8.DecodeRuneInString(s)
-	return s[i:]
 }
 
 //[]GeoZip
@@ -154,16 +103,6 @@ func find(records [][]string, val string, col int) GeoCode {
 	}
 	return geoCode
 }
-
-// func find(records [][]string, val string, col int) {
-// 	//newGZ := GeoZip{}
-// 	for _, row := range records {
-// 		if row[col] == val {
-// 			fmt.Printf("row: %v", row)
-// 		}
-// 	}
-
-// }
 
 //[]*o.OrderRecord
 func GetTemps(r []*o.OrderRecord) {
