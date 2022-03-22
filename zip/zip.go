@@ -3,8 +3,9 @@ package zip
 import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,7 +36,7 @@ func isStringEmpty(str ...string) bool {
 	return false
 }
 
-// keeps only base zip
+// Keeps only base zip
 func FirstFiveZip(zip string) string {
 	counter := 0
 	for i := range zip {
@@ -92,8 +93,7 @@ func SortZipTable(z []ZipTemp) {
 
 }
 
-//[]GeoZip
-func find(records [][]string, val string, col int) GeoCode {
+func findGeoCode(records [][]string, val string, col int) GeoCode {
 	geoCode := GeoCode{}
 	for _, row := range records {
 		if row[col] == val {
@@ -110,9 +110,8 @@ func GetTemps(r []*o.OrderRecord) {
 	geoZips := geocodeZips()
 	newOrders := []o.OrderRecord{}
 
-	// zipTempTable := []ZipTemp{}
-	// zipTempUnit := ZipTemp{}
 	for i, order := range orders {
+		// REMOVE THIS IF LATER
 		if i <= 2 {
 			iceProfile := "0"
 			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
@@ -142,14 +141,15 @@ func GetTemps(r []*o.OrderRecord) {
 				}
 
 				if !isStringEmpty(order.PostalCode) {
-					gz := find(geoZips, order.PostalCode, 0)
+					gz := findGeoCode(geoZips, order.PostalCode, 0)
+					// Eventually will be thisOrder == tempCheck(gz)
 					tempCheck(gz)
 					newOrders = append(newOrders, thisOrder)
 				}
 
 			}
 
-			// fmti.Printf("row %v \n", row)
+			// fmt.Printf("row %v \n", row)
 			//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
 		}
 
@@ -162,15 +162,34 @@ func GetTemps(r []*o.OrderRecord) {
 // string
 func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
-	s := "https://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid="
+	weather := o.WeatherData{}
+	// TODO Make lat & lon editable variables
+	// ALSO This needs to run at 60 req/minute
+	// whether that's a quick burst of 60 and a pause
+	// or one req every ~1.1 seconds
+	lat := "lat=35&"
+	lon := "lon=139&"
+	s := "https://api.openweathermap.org/data/2.5/weather?"
+
 	parsedUrl, err := url.Parse(s)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("url scheme: %v \n", parsedUrl.Scheme)
-	resp, err := http.Get(parsedUrl.String() + apiKey)
+
+	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
-	fmt.Printf("respons: %v \n", resp)
+
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal([]byte(respJSON), &weather)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("respons: %v \n", weather)
 }

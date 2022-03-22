@@ -28,7 +28,6 @@ type OrderRecord struct {
 	ItemSKU         string `csv:"Lineitem sku"`
 	ItemName        string `csv:"Lineitem name"`
 	ItemUnitPrice   string `csv:"Lineitem price"`
-	LineItems       []LineItem
 }
 
 type LineItem struct {
@@ -38,32 +37,57 @@ type LineItem struct {
 	ItemUnitPrice string `csv:"Lineitem price"`
 }
 
-// []*OrderRecord
-// func AddLineItems(records []*OrderRecord) {
-// 	// newRecords := []OrderRecord{}
-// 	lastRow := records[len(records)-1]
+type Coordinates struct {
+	Lat int
+	Lon int
+}
 
-// 	for i, v := range records {
-// 		order := v
+type Weather []struct {
+	ID          int
+	weatherMain string
+	Description string
+	Icon        string
+}
 
-// 		fmt.Printf("i: %d\n", i)
-// 		fmt.Printf("v: %v\n", v)
+type Main struct {
+	Temp      float32
+	FeelsLike float32
+	TempMin   float32
+	TempMax   float32
+	Pressure  int
+	Humidity  int
+}
 
-// 		// Runs until the last row
-// 		if lastRow != nil {
-// 			if (isStringEmpty(order.BuyerFullName)) && (isStringEmpty(order.RecFullName)) {
-// 				thisOrder := order
-// 				nextOrder := records[i+1]
-// 				prevOrder := records[i-1]
-// 				lineItem := []LineItem{}
-// 				// if the next order has these empty fields, it is a line item and should be added to the order
-// 				if (isStringEmpty(nextOrder.BuyerFullName)) && (isStringEmpty(nextOrder.RecFullName)) {
-// 					thisOrder.LineItem = append(nextOrder.LineItems)
-// 				}
+type Clouds struct {
+	All int
+}
 
-// 			}
-// 		}
+type Sys struct {
+	Type    int
+	ID      int
+	Country string
+	Sunrise int
+	Sunset  int
+}
 
-// 	}
-// 	fmt.Printf("Last Row %T\n", lastRow)
-// }
+type Wind struct {
+	Speed float32
+	Deg   int
+	Gust  float32
+}
+
+type WeatherData struct {
+	Coordinates Coordinates
+	Weather     Weather
+	Base        string
+	Main        Main
+	Visibility  int
+	Wind        Wind
+	Clouds      Clouds
+	Dt          int
+	Sys         Sys
+	Timezone    int
+	ID          int
+	Name        string
+	Cod         int
+}
