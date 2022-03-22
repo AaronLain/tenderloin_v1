@@ -93,7 +93,7 @@ func SortZipTable(z []ZipTemp) {
 
 }
 
-func find(records [][]string, val string, col int) GeoCode {
+func findGeoCode(records [][]string, val string, col int) GeoCode {
 	geoCode := GeoCode{}
 	for _, row := range records {
 		if row[col] == val {
@@ -141,7 +141,7 @@ func GetTemps(r []*o.OrderRecord) {
 				}
 
 				if !isStringEmpty(order.PostalCode) {
-					gz := find(geoZips, order.PostalCode, 0)
+					gz := findGeoCode(geoZips, order.PostalCode, 0)
 					// Eventually will be thisOrder == tempCheck(gz)
 					tempCheck(gz)
 					newOrders = append(newOrders, thisOrder)
