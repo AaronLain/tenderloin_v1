@@ -104,6 +104,21 @@ func findGeoCode(records [][]string, val string, col int) GeoCode {
 	return geoCode
 }
 
+func profileAssignment(temp float32) string {
+	if temp <= 55.0 {
+		return "Profile 1"
+	} else if (temp > 55.0) && (temp <= 75.0) {
+		return "Profile 2"
+	} else if (temp > 75) && (temp <= 85) {
+		return "Profile 3"
+	} else if (temp > 85) && (temp <= 95) {
+		return "Profile 4"
+	} else {
+		return "Profile 5"
+	}
+
+}
+
 //[]*o.OrderRecord
 func GetTemps(r []*o.OrderRecord) {
 	orders := ConvertAllZips(r)
@@ -112,7 +127,7 @@ func GetTemps(r []*o.OrderRecord) {
 
 	for i, order := range orders {
 		// REMOVE THIS IF LATER
-		if i <= 2 {
+		if i <= 4 {
 			iceProfile := "0"
 			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
 				thisOrder := o.OrderRecord{
@@ -142,8 +157,11 @@ func GetTemps(r []*o.OrderRecord) {
 
 				if !isStringEmpty(order.PostalCode) {
 					gz := findGeoCode(geoZips, order.PostalCode, 0)
+
 					// Eventually will be thisOrder == tempCheck(gz)
-					tempCheck(gz)
+					temp := tempCheck(gz)
+					thisOrder.CustomField3 = profileAssignment(temp)
+					fmt.Printf("profile: %v \n", thisOrder.CustomField3)
 					newOrders = append(newOrders, thisOrder)
 				}
 
@@ -160,7 +178,6 @@ func GetTemps(r []*o.OrderRecord) {
 }
 
 func longitude(input string) string {
-
 	lon1 := "lon="
 	lon2 := input
 	lon3 := "&"
@@ -179,23 +196,23 @@ func latitude(input string) string {
 }
 
 // string
-func tempCheck(gc GeoCode) {
+func tempCheck(gc GeoCode) float32 {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
-	// TODO Make lat & lon editable variables
-	// ALSO This needs to run at 60 req/minute
+	// TODO This needs to run at 60 req/minute
 	// whether that's a quick burst of 60 and a pause
 	// or one req every ~1.1 seconds
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
-	s := "https://api.openweathermap.org/data/2.5/weather?"
+	imp := "&units=imperial"
+	link := "https://api.openweathermap.org/data/2.5/weather?"
 
-	parsedUrl, err := url.Parse(s)
+	parsedUrl, err := url.Parse(link)
 	if err != nil {
 		panic(err)
 	}
 
-	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey)
+	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + imp)
 	if err != nil {
 		panic(err)
 	}
@@ -210,5 +227,8 @@ func tempCheck(gc GeoCode) {
 		panic(err)
 	}
 
-	fmt.Printf("response: %v \n", weather)
+	fmt.Printf("max temp: %v \n", weather.Main.Temp_max)
+	fmt.Printf("min temp: %v \n", weather.Main.Temp_min)
+
+	return weather.Main.Temp_max
 }

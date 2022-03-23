@@ -52,12 +52,12 @@ type Weather []struct {
 }
 
 type Main struct {
-	Temp      float32
-	FeelsLike float32
-	TempMin   float32
-	TempMax   float32
-	Pressure  int
-	Humidity  int
+	Temp       float32
+	Feels_like float32
+	Temp_min   float32
+	Temp_max   float32
+	Pressure   int
+	Humidity   int
 }
 
 type Clouds struct {
