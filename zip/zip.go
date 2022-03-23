@@ -159,9 +159,9 @@ func GetTemps(r []*o.OrderRecord) {
 					gz := findGeoCode(geoZips, order.PostalCode, 0)
 
 					// Eventually will be thisOrder == tempCheck(gz)
-					temp := tempCheck(gz)
-					thisOrder.CustomField3 = profileAssignment(temp)
-					fmt.Printf("profile: %v \n", thisOrder.CustomField3)
+					tempCheck(gz)
+					// thisOrder.CustomField3 = profileAssignment(temp)
+					// fmt.Printf("profile: %v \n", thisOrder.CustomField3)
 					newOrders = append(newOrders, thisOrder)
 				}
 
@@ -196,7 +196,7 @@ func latitude(input string) string {
 }
 
 // string
-func tempCheck(gc GeoCode) float32 {
+func tempCheck(gc GeoCode) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
 	// TODO This needs to run at 60 req/minute
@@ -205,7 +205,7 @@ func tempCheck(gc GeoCode) float32 {
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
 	imp := "&units=imperial"
-	link := "https://api.openweathermap.org/data/2.5/weather?"
+	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	parsedUrl, err := url.Parse(link)
 	if err != nil {
@@ -227,8 +227,12 @@ func tempCheck(gc GeoCode) float32 {
 		panic(err)
 	}
 
-	fmt.Printf("max temp: %v \n", weather.Main.Temp_max)
-	fmt.Printf("min temp: %v \n", weather.Main.Temp_min)
+	for _, v := range weather.List {
+		fmt.Printf("v: %v \n", v)
+	}
 
-	return weather.Main.Temp_max
+	// fmt.Printf("weather: %v \n", weather.List)
+	// fmt.Printf("min temp: %v \n", weather.List)
+
+	// return weather.List.Main.Temp_max
 }
