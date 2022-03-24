@@ -129,7 +129,7 @@ func GetTemps(r []*o.OrderRecord) {
 
 	for i, order := range orders {
 		// REMOVE THIS IF LATER
-		if i <= 1 {
+		if i <= 20 {
 			iceProfile := "0"
 			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
 				thisOrder := o.OrderRecord{
