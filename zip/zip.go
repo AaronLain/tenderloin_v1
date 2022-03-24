@@ -127,7 +127,7 @@ func GetTemps(r []*o.OrderRecord) {
 
 	for i, order := range orders {
 		// REMOVE THIS IF LATER
-		if i <= 4 {
+		if i <= 1 {
 			iceProfile := "0"
 			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
 				thisOrder := o.OrderRecord{
@@ -205,6 +205,7 @@ func tempCheck(gc GeoCode) {
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
 	imp := "&units=imperial"
+	cnt := "&cnt=24"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	parsedUrl, err := url.Parse(link)
@@ -212,7 +213,7 @@ func tempCheck(gc GeoCode) {
 		panic(err)
 	}
 
-	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + imp)
+	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + cnt + imp)
 	if err != nil {
 		panic(err)
 	}
@@ -227,12 +228,24 @@ func tempCheck(gc GeoCode) {
 		panic(err)
 	}
 
-	for _, v := range weather.List {
-		fmt.Printf("v: %v \n", v)
-	}
+	fmt.Printf("avg? %v \n", tempAvg(weather.List))
 
 	// fmt.Printf("weather: %v \n", weather.List)
 	// fmt.Printf("min temp: %v \n", weather.List)
 
 	// return weather.List.Main.Temp_max
+}
+
+func tempAvg(r o.List) float32 {
+	var total float32 = 0
+	len := float32(len(r))
+	for _, v := range r {
+		total = total + v.Main.Temp
+		fmt.Printf("dt: %v \n", v.Dt_txt)
+	}
+	fmt.Printf("list? %v \n", r)
+	fmt.Printf("total? %v \n", total)
+	fmt.Printf("len? %v \n", len)
+	return total / len
+
 }
