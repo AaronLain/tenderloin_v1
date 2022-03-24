@@ -9,7 +9,7 @@ main
 *.swp
 *.swo
 zip/ZipGeoCode2.csv
-Orders_test_2.csv
+Orders_test_2*.csv
 # Test binary, built with `go test -c`
 *.test
 
