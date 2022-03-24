@@ -1,34 +1,33 @@
 package orders
 
 type OrderRecord struct {
-	OrderNum        string  `csv:"Name"`
-	OrderDate       string  `csv:"Created at"`
-	DatePaid        string  `csv:"Paid at"`
-	Total           string  `csv:"Total"`
-	AmountPaid      string  `csv:"Total"`
-	Tax             string  `csv:"Taxes"`
-	ShippingPaid    string  `csv:"Shipping"`
-	ShippingService string  `csv:"Shipping Method"`
-	CustomField1    string  `csv:"CustomField1"`
-	CustomField2    string  `csv:"Tags"`
-	CustomField3    string  `csv:"CustomField3"`
-	AvgTemp         float64 `csv:"AvgTemp"`
-	Source          string  `csv:"Source"`
-	BuyerFullName   string  `csv:"Billing Name"`
-	BuyerEmail      string  `csv:"Email"`
-	BuyerPhone      string  `csv:"Billing Phone"`
-	RecFullName     string  `csv:"Shipping Name"`
-	RecPhone        string  `csv:"Shipping Phone"`
-	RecCompany      string  `csv:"Shipping Company"`
-	AddressLine1    string  `csv:"Shipping Address1"`
-	AddressLine2    string  `csv:"Shipping Address2"`
-	City            string  `csv:"Shipping City"`
-	State           string  `csv:"Shipping Province"`
-	PostalCode      string  `csv:"Shipping Zip"`
-	CountryCode     string  `csv:"Shipping Country"`
-	ItemSKU         string  `csv:"Lineitem sku"`
-	ItemName        string  `csv:"Lineitem name"`
-	ItemUnitPrice   string  `csv:"Lineitem price"`
+	OrderNum        string `csv:"Name"`
+	OrderDate       string `csv:"Created at"`
+	DatePaid        string `csv:"Paid at"`
+	Total           string `csv:"Total"`
+	AmountPaid      string `csv:"Total"`
+	Tax             string `csv:"Taxes"`
+	ShippingPaid    string `csv:"Shipping"`
+	ShippingService string `csv:"Shipping Method"`
+	CustomField1    string `csv:"-"`
+	CustomField2    string `csv:"Tags"`
+	CustomField3    string `csv:"-"`
+	Source          string `csv:"Source"`
+	BuyerFullName   string `csv:"Billing Name"`
+	BuyerEmail      string `csv:"Email"`
+	BuyerPhone      string `csv:"Billing Phone"`
+	RecFullName     string `csv:"Shipping Name"`
+	RecPhone        string `csv:"Shipping Phone"`
+	RecCompany      string `csv:"Shipping Company"`
+	AddressLine1    string `csv:"Shipping Address1"`
+	AddressLine2    string `csv:"Shipping Address2"`
+	City            string `csv:"Shipping City"`
+	State           string `csv:"Shipping Province"`
+	PostalCode      string `csv:"Shipping Zip"`
+	CountryCode     string `csv:"Shipping Country"`
+	ItemSKU         string `csv:"Lineitem sku"`
+	ItemName        string `csv:"Lineitem name"`
+	ItemUnitPrice   string `csv:"Lineitem price"`
 }
 
 // Weather Data Structure
