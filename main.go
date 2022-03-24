@@ -27,6 +27,7 @@ func csvReader(s string) []*orders.OrderRecord {
 	return records
 }
 
+
 func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
