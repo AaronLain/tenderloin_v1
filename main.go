@@ -10,13 +10,20 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-func csvReader() {
-
+func initialize() {
 	localString := "./"
 	input := strings.Join(os.Args[1:], "")
 	fileName := localString + input
 
-	recordFile, err := os.Open(fileName)
+	records := csvReader(fileName)
+
+	defer zip.GetTemps(records)
+
+}
+
+func csvReader(s string) []*orders.OrderRecord {
+
+	recordFile, err := os.Open(s)
 	if err != nil {
 		fmt.Println("Error occured! ::", err)
 	}
@@ -28,10 +35,10 @@ func csvReader() {
 		panic(err)
 	}
 
-	zip.GetTemps(records)
+	return records
 
 }
 
 func main() {
-	csvReader()
+	initialize()
 }
