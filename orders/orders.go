@@ -30,34 +30,29 @@ type OrderRecord struct {
 	ItemUnitPrice   string `csv:"Lineitem price"`
 }
 
-// Probably need to get rid of this?
-type LineItem struct {
-	OrderNum      string `csv:"Name"`
-	ItemSKU       string `csv:"Lineitem sku"`
-	ItemName      string `csv:"Lineitem name"`
-	ItemUnitPrice string `csv:"Lineitem price"`
-}
-
 // Weather Data Structure
-type Coordinates struct {
-	Lat int
-	Lon int
+type Coord struct {
+	Lat float64
+	Lon float64
 }
 
 type Weather []struct {
 	ID          int
-	weatherMain string
+	Main        string
 	Description string
 	Icon        string
 }
 
 type Main struct {
-	Temp      float32
-	FeelsLike float32
-	TempMin   float32
-	TempMax   float32
-	Pressure  int
-	Humidity  int
+	Temp       float64
+	Feels_like float64
+	Temp_min   float64
+	Temp_max   float64
+	Pressure   int32
+	Sea_level  int32
+	Grnd_level int32
+	Humidity   int32
+	Temp_kf    float64
 }
 
 type Clouds struct {
@@ -65,31 +60,42 @@ type Clouds struct {
 }
 
 type Sys struct {
-	Type    int
-	ID      int
-	Country string
-	Sunrise int
-	Sunset  int
+	Pod string
 }
 
 type Wind struct {
-	Speed float32
+	Speed float64
 	Deg   int
-	Gust  float32
+	Gust  float64
+}
+
+type City struct {
+	ID         int32
+	Name       string
+	Coord      Coord
+	Country    string
+	Population int32
+	Timezone   int
+	Sunrise    int32
+	Sunset     int32
+}
+
+type List []struct {
+	Dt         int32
+	Main       Main
+	Weather    Weather
+	Clouds     Clouds
+	Wind       Wind
+	Visibility int
+	Pop        float64
+	Sys        Sys
+	Dt_txt     string
 }
 
 type WeatherData struct {
-	Coordinates Coordinates
-	Weather     Weather
-	Base        string
-	Main        Main
-	Visibility  int
-	Wind        Wind
-	Clouds      Clouds
-	Dt          int
-	Sys         Sys
-	Timezone    int
-	ID          int
-	Name        string
-	Cod         int
+	Cod     string
+	Message int
+	Cnt     int
+	List    List
+	City    City
 }
