@@ -4,7 +4,6 @@ import (
 	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 func csvReader(s string) []*orders.OrderRecord {
 	recordFile, err := os.Open(s)
 	if err != nil {
-		fmt.Println("Couldn't open ::", err)
+		fmt.Println("Error occured! ::", err)
 	}
 
 	records := []*orders.OrderRecord{}
@@ -26,6 +25,7 @@ func csvReader(s string) []*orders.OrderRecord {
 
 	return records
 }
+
 
 func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
@@ -50,10 +50,10 @@ func initializeCSV() {
 
 	records := csvReader(fileName)
 
-	defer csvWriter(fileName, records)
+	defer zip.GetTemps(records)
 
 }
 
 func main() {
-	initializeCSV()
+	initialize()
 }
