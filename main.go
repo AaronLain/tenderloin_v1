@@ -26,24 +26,7 @@ func csvReader(s string) []*orders.OrderRecord {
 	return records
 }
 
-
-func csvWriter(input string, o []*orders.OrderRecord) {
-	output1 := strings.TrimSuffix(input, ".csv")
-	output2 := strings.TrimPrefix(output1, "./")
-	outputName := output2 + "_"
-	newRecords := zip.GetTemps(o)
-	// check to see if filename already exists before creating!
-	if _, err := os.Stat(outputName); os.IsNotExist(err) {
-		file, err := ioutil.TempFile("./", outputName)
-		fmt.Printf("file: %v", file.Name())
-		if err != nil {
-			fmt.Println("Couldn't create csv ::", err)
-		}
-		gocsv.MarshalFile(&newRecords, file)
-	}
-}
-
-func initializeCSV() {
+func initialize() {
 	localString := "./"
 	input := strings.Join(os.Args[1:], "")
 	fileName := localString + input
