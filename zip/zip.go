@@ -68,7 +68,7 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 	return r
 }
 
-func geocodeZips() [][]string {
+func geocodeZips() ([][]string, error) {
 	orderCsv, err := os.Open("./zip/ZipGeoCode.csv")
 	if err != nil {
 		fmt.Println("Error occured! ::", err)
@@ -80,7 +80,7 @@ func geocodeZips() [][]string {
 		panic(err)
 	}
 
-	return geoZips
+	return geoZips, err
 }
 
 // []ZipTemp
@@ -123,9 +123,10 @@ func profileAssignment(temp float64) string {
 }
 
 //[]*o.OrderRecord
-func GetTemps(r []*o.OrderRecord) []o.OrderRecord {
+func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 	orders := ConvertAllZips(r)
-	geoZips := geocodeZips()
+	geoZips, err := geocodeZips()
+
 	newOrders := []o.OrderRecord{}
 
 	for _, order := range orders {
@@ -172,7 +173,7 @@ func GetTemps(r []*o.OrderRecord) []o.OrderRecord {
 
 	}
 
-	return newOrders
+	return newOrders, err
 
 }
 
