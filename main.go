@@ -33,9 +33,7 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_" + num
-	// fmt.Printf("OutputName %v", outputName)
 	newRecords := zip.GetTemps(o)
-	// fmt.Printf(" write new records?: %v \n", newRecords)
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
 		file, err := ioutil.TempFile("./", outputName)
 		fmt.Printf("file: %v", file.Name())
@@ -44,7 +42,6 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 		}
 		gocsv.MarshalFile(&newRecords, file)
 	}
-
 }
 
 func initialize() {
