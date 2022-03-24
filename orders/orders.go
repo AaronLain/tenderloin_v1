@@ -11,7 +11,8 @@ type OrderRecord struct {
 	ShippingService string `csv:"Shipping Method"`
 	CustomField1    string `csv:"-"`
 	CustomField2    string `csv:"Tags"`
-	CustomField3    string `csv:"-"`
+	CustomField3    string `csv:"CustomField3"`
+	AvgTemp         string `csv:"AvgTemp"`
 	Source          string `csv:"Source"`
 	BuyerFullName   string `csv:"Billing Name"`
 	BuyerEmail      string `csv:"Email"`

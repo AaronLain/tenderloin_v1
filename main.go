@@ -4,6 +4,7 @@ import (
 	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -25,7 +26,6 @@ func csvReader(s string) []*orders.OrderRecord {
 
 	return records
 }
-
 
 func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
@@ -55,5 +55,5 @@ func initializeCSV() {
 }
 
 func main() {
-	initialize()
+	initializeCSV()
 }
