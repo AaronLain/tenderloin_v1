@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -122,60 +123,56 @@ func profileAssignment(temp float64) string {
 }
 
 //[]*o.OrderRecord
-func GetTemps(r []*o.OrderRecord) {
+func GetTemps(r []*o.OrderRecord) []o.OrderRecord {
 	orders := ConvertAllZips(r)
 	geoZips := geocodeZips()
 	newOrders := []o.OrderRecord{}
 
-	for i, order := range orders {
-		// REMOVE THIS IF LATER
-		if i <= 20 {
-			iceProfile := "0"
-			if (!isStringEmpty(order.BuyerFullName)) && (!isStringEmpty(order.RecFullName)) {
-				thisOrder := o.OrderRecord{
-					OrderNum:        order.OrderNum,
-					OrderDate:       order.OrderDate,
-					DatePaid:        order.DatePaid,
-					Total:           order.Total,
-					AmountPaid:      order.AmountPaid,
-					Tax:             order.Tax,
-					ShippingPaid:    order.ShippingPaid,
-					ShippingService: order.ShippingService,
-					CustomField1:    order.CustomField1,
-					CustomField2:    order.CustomField2,
-					CustomField3:    iceProfile,
-					Source:          order.Source,
-					BuyerFullName:   order.BuyerFullName,
-					BuyerEmail:      order.BuyerEmail,
-					BuyerPhone:      order.BuyerPhone,
-					RecPhone:        order.RecPhone,
-					City:            order.City,
-					State:           order.State,
-					PostalCode:      order.PostalCode,
-					ItemSKU:         order.ItemSKU,
-					ItemUnitPrice:   order.ItemUnitPrice,
-					ItemName:        order.ItemName,
-				}
-
-				if !isStringEmpty(order.PostalCode) {
-					gz := findGeoCode(geoZips, order.PostalCode, 0)
-
-					// Eventually will be thisOrder == tempCheck(gz)
-					temp := tempCheck(gz)
-					thisOrder.CustomField3 = profileAssignment(temp)
-					// fmt.Printf("profile: %v \n", thisOrder.CustomField3)
-					newOrders = append(newOrders, thisOrder)
-				}
-
-			}
-
-			// fmt.Printf("row %v \n", row)
-			//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
+	for _, order := range orders {
+		thisOrder := o.OrderRecord{
+			OrderNum:        order.OrderNum,
+			OrderDate:       order.OrderDate,
+			DatePaid:        order.DatePaid,
+			Total:           order.Total,
+			AmountPaid:      order.AmountPaid,
+			Tax:             order.Tax,
+			ShippingPaid:    order.ShippingPaid,
+			ShippingService: order.ShippingService,
+			CustomField1:    order.CustomField1,
+			CustomField2:    order.CustomField2,
+			CustomField3:    order.CustomField3,
+			AvgTemp:         order.AvgTemp,
+			Source:          order.Source,
+			BuyerFullName:   order.BuyerFullName,
+			BuyerEmail:      order.BuyerEmail,
+			BuyerPhone:      order.BuyerPhone,
+			RecPhone:        order.RecPhone,
+			City:            order.City,
+			State:           order.State,
+			PostalCode:      order.PostalCode,
+			ItemSKU:         order.ItemSKU,
+			ItemUnitPrice:   order.ItemUnitPrice,
+			ItemName:        order.ItemName,
 		}
+
+		if !isStringEmpty(order.PostalCode) {
+			gz := findGeoCode(geoZips, order.PostalCode, 0)
+			temp := tempCheck(gz)
+			thisOrder.AvgTemp = temp
+			thisOrder.CustomField3 = profileAssignment(temp)
+			newOrders = append(newOrders, thisOrder)
+		} else if isStringEmpty(order.PostalCode) {
+			newOrders = append(newOrders, thisOrder)
+		} else {
+			fmt.Println("something done broked")
+		}
+
+		// fmt.Printf("row %v \n", row)
+		//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
 
 	}
 
-	fmt.Printf("newOrders: %v \n", newOrders)
+	return newOrders
 
 }
 
@@ -214,26 +211,26 @@ func tempCheck(gc GeoCode) float64 {
 
 	parsedUrl, err := url.Parse(link)
 	if err != nil {
-		panic(err)
+		fmt.Println("parsing error ::", err)
 	}
 
 	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + cnt + imp)
 	if err != nil {
-		panic(err)
+		fmt.Println("HTTP request error ::", err)
 	}
 
 	respJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		fmt.Println("read i/o error ::", err)
 	}
 
 	err = json.Unmarshal([]byte(respJSON), &weather)
 	if err != nil {
-		panic(err)
+		fmt.Println("json unmarshalling error ::", err)
 	}
 	temp := tempAvg(weather.List)
-	fmt.Printf("avg: %v \n", temp)
-	return temp
+	// fmt.Printf("avg: %v \n", temp)
+	return math.Round(temp*100) / 100
 }
 
 func tempAvg(r o.List) float64 {
@@ -241,11 +238,11 @@ func tempAvg(r o.List) float64 {
 	len := float64(len(r))
 	for _, v := range r {
 		total = total + v.Main.Temp
-		fmt.Printf("dt: %v \n", v.Dt_txt)
+		// fmt.Printf("dt: %v \n", v.Dt_txt)
 	}
-	fmt.Printf("list? %v \n", r)
-	fmt.Printf("total? %v \n", total)
-	fmt.Printf("len? %v \n", len)
+	// fmt.Printf("list? %v \n", r)
+	// fmt.Printf("total? %v \n", total)
+	// fmt.Printf("len? %v \n", len)
 	return total / len
 
 }
