@@ -5,13 +5,18 @@ import (
 	zip "ajl/tenderloin/zip"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gocarina/gocsv"
 )
 
 func csvReader() {
 
-	recordFile, err := os.Open("./Orders_test_2.csv")
+	localString := "./"
+	input := strings.Join(os.Args[1:], "")
+	fileName := localString + input
+
+	recordFile, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error occured! ::", err)
 	}
