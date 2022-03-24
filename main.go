@@ -4,7 +4,6 @@ import (
 	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 func csvReader(s string) []*orders.OrderRecord {
 	recordFile, err := os.Open(s)
 	if err != nil {
-		fmt.Println("Couldn't open ::", err)
+		fmt.Println("Error occured! ::", err)
 	}
 
 	records := []*orders.OrderRecord{}
@@ -27,32 +26,17 @@ func csvReader(s string) []*orders.OrderRecord {
 	return records
 }
 
-func csvWriter(input string, o []*orders.OrderRecord) {
-	output1 := strings.TrimSuffix(input, ".csv")
-	output2 := strings.TrimPrefix(output1, "./")
-	outputName := output2 + "_"
-	newRecords := zip.GetTemps(o)
-	if _, err := os.Stat(outputName); os.IsNotExist(err) {
-		file, err := ioutil.TempFile("./", outputName)
-		fmt.Printf("file: %v", file.Name())
-		if err != nil {
-			fmt.Println("Couldn't create csv ::", err)
-		}
-		gocsv.MarshalFile(&newRecords, file)
-	}
-}
-
-func initializeCSV() {
+func initialize() {
 	localString := "./"
 	input := strings.Join(os.Args[1:], "")
 	fileName := localString + input
 
 	records := csvReader(fileName)
 
-	defer csvWriter(fileName, records)
+	defer zip.GetTemps(records)
 
 }
 
 func main() {
-	initializeCSV()
+	initialize()
 }
