@@ -28,11 +28,9 @@ func csvReader(s string) []*orders.OrderRecord {
 }
 
 func csvWriter(input string, o []*orders.OrderRecord) {
-	count := 1
-	num := fmt.Sprintf("%v", count)
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
-	outputName := output2 + "_" + num
+	outputName := output2 + "_"
 	newRecords := zip.GetTemps(o)
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
 		file, err := ioutil.TempFile("./", outputName)
@@ -44,7 +42,7 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 	}
 }
 
-func initialize() {
+func initializeCSV() {
 	localString := "./"
 	input := strings.Join(os.Args[1:], "")
 	fileName := localString + input
@@ -56,5 +54,5 @@ func initialize() {
 }
 
 func main() {
-	initialize()
+	initializeCSV()
 }

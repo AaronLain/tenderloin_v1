@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -140,6 +141,7 @@ func GetTemps(r []*o.OrderRecord) []o.OrderRecord {
 			CustomField1:    order.CustomField1,
 			CustomField2:    order.CustomField2,
 			CustomField3:    order.CustomField3,
+			AvgTemp:         order.AvgTemp,
 			Source:          order.Source,
 			BuyerFullName:   order.BuyerFullName,
 			BuyerEmail:      order.BuyerEmail,
@@ -156,6 +158,7 @@ func GetTemps(r []*o.OrderRecord) []o.OrderRecord {
 		if !isStringEmpty(order.PostalCode) {
 			gz := findGeoCode(geoZips, order.PostalCode, 0)
 			temp := tempCheck(gz)
+			thisOrder.AvgTemp = temp
 			thisOrder.CustomField3 = profileAssignment(temp)
 			newOrders = append(newOrders, thisOrder)
 		} else if isStringEmpty(order.PostalCode) {
@@ -227,7 +230,7 @@ func tempCheck(gc GeoCode) float64 {
 	}
 	temp := tempAvg(weather.List)
 	// fmt.Printf("avg: %v \n", temp)
-	return temp
+	return math.Round(temp*100) / 100
 }
 
 func tempAvg(r o.List) float64 {
