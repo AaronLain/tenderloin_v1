@@ -104,7 +104,7 @@ func findGeoCode(records [][]string, val string, col int) GeoCode {
 	return geoCode
 }
 
-func profileAssignment(temp float32) string {
+func profileAssignment(temp float64) string {
 	if temp <= 55.0 {
 		return "Profile 1"
 	} else if (temp > 55.0) && (temp <= 75.0) {
@@ -113,8 +113,10 @@ func profileAssignment(temp float32) string {
 		return "Profile 3"
 	} else if (temp > 85) && (temp <= 95) {
 		return "Profile 4"
-	} else {
+	} else if temp > 95 {
 		return "Profile 5"
+	} else {
+		return "No Temp Found"
 	}
 
 }
@@ -159,8 +161,8 @@ func GetTemps(r []*o.OrderRecord) {
 					gz := findGeoCode(geoZips, order.PostalCode, 0)
 
 					// Eventually will be thisOrder == tempCheck(gz)
-					tempCheck(gz)
-					// thisOrder.CustomField3 = profileAssignment(temp)
+					temp := tempCheck(gz)
+					thisOrder.CustomField3 = profileAssignment(temp)
 					// fmt.Printf("profile: %v \n", thisOrder.CustomField3)
 					newOrders = append(newOrders, thisOrder)
 				}
@@ -196,7 +198,7 @@ func latitude(input string) string {
 }
 
 // string
-func tempCheck(gc GeoCode) {
+func tempCheck(gc GeoCode) float64 {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
 	// TODO This needs to run at 60 req/minute
@@ -204,7 +206,9 @@ func tempCheck(gc GeoCode) {
 	// or one req every ~1.1 seconds
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
+	// returns F instead of K
 	imp := "&units=imperial"
+	// 3 days of forecast instead of 5
 	cnt := "&cnt=24"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
@@ -227,18 +231,14 @@ func tempCheck(gc GeoCode) {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("avg? %v \n", tempAvg(weather.List))
-
-	// fmt.Printf("weather: %v \n", weather.List)
-	// fmt.Printf("min temp: %v \n", weather.List)
-
-	// return weather.List.Main.Temp_max
+	temp := tempAvg(weather.List)
+	fmt.Printf("avg: %v \n", temp)
+	return temp
 }
 
-func tempAvg(r o.List) float32 {
-	var total float32 = 0
-	len := float32(len(r))
+func tempAvg(r o.List) float64 {
+	total := 0.0
+	len := float64(len(r))
 	for _, v := range r {
 		total = total + v.Main.Temp
 		fmt.Printf("dt: %v \n", v.Dt_txt)

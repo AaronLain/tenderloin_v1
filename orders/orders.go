@@ -32,8 +32,8 @@ type OrderRecord struct {
 
 // Weather Data Structure
 type Coord struct {
-	Lat float32
-	Lon float32
+	Lat float64
+	Lon float64
 }
 
 type Weather []struct {
@@ -44,15 +44,15 @@ type Weather []struct {
 }
 
 type Main struct {
-	Temp       float32
-	Feels_like float32
-	Temp_min   float32
-	Temp_max   float32
+	Temp       float64
+	Feels_like float64
+	Temp_min   float64
+	Temp_max   float64
 	Pressure   int32
 	Sea_level  int32
 	Grnd_level int32
 	Humidity   int32
-	Temp_kf    float32
+	Temp_kf    float64
 }
 
 type Clouds struct {
@@ -64,9 +64,9 @@ type Sys struct {
 }
 
 type Wind struct {
-	Speed float32
+	Speed float64
 	Deg   int
-	Gust  float32
+	Gust  float64
 }
 
 type City struct {
@@ -87,7 +87,7 @@ type List []struct {
 	Clouds     Clouds
 	Wind       Wind
 	Visibility int
-	Pop        float32
+	Pop        float64
 	Sys        Sys
 	Dt_txt     string
 }
