@@ -14,13 +14,13 @@ import (
 func csvReader(s string) ([]*orders.OrderRecord, error) {
 	recordFile, err := os.Open(s)
 	if err != nil {
-		fmt.Println("Error occured! ::", err)
+		fmt.Println("Reader Error occured! ::", err)
 	}
 
 	records := []*orders.OrderRecord{}
 
 	if err := gocsv.UnmarshalFile(recordFile, &records); err != nil {
-		panic(err)
+		fmt.Println("Unmarshalling Error occured! ::", err)
 	}
 	defer recordFile.Close()
 
@@ -40,7 +40,7 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 		file, err := ioutil.TempFile("./", outputName)
 		fmt.Printf("file: %v", file.Name())
 		if err != nil {
-			fmt.Println("Couldn't create csv ::", err)
+			fmt.Println("Can't create csv ::", err)
 		}
 		gocsv.MarshalFile(&newRecords, file)
 	}
@@ -53,7 +53,7 @@ func initializeCSV() {
 
 	records, err := csvReader(fileName)
 	if err != nil {
-		fmt.Println("can't initialize reader ::", err)
+		fmt.Println("Can't initialize reader ::", err)
 	}
 
 	csvWriter(fileName, records)

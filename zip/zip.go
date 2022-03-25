@@ -4,6 +4,7 @@ import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -56,7 +57,7 @@ func FirstFiveZip(zip string) string {
 	return zip
 }
 
-func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
+func ConvertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 	for _, v := range r {
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
@@ -65,36 +66,25 @@ func ConvertAllZips(r []*o.OrderRecord) []*o.OrderRecord {
 		}
 		continue
 	}
-	return r
+	return r, errors.New("Couldn't convert zip codes")
 }
 
 func geocodeZips() ([][]string, error) {
 	orderCsv, err := os.Open("./zip/ZipGeoCode.csv")
 	if err != nil {
-		fmt.Println("Error occured! ::", err)
+		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
 	defer orderCsv.Close()
 
 	geoZips, err := csv.NewReader(orderCsv).ReadAll()
 	if err != nil {
-		panic(err)
+		fmt.Println("Geocode Reader Error occured! ::", err)
 	}
 
 	return geoZips, err
 }
 
-// []ZipTemp
-func SortZipTable(z []ZipTemp) {
-	m := make(map[string][]ZipTemp)
-	for _, o := range z {
-		m[o.Zip] = append(m[o.Zip], o)
-		fmt.Printf("o: %v \n", o)
-	}
-	fmt.Printf("newZipTable: %v \n", m)
-
-}
-
-func findGeoCode(records [][]string, val string, col int) GeoCode {
+func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
 	geoCode := GeoCode{}
 	for _, row := range records {
 		if row[col] == val {
@@ -102,7 +92,7 @@ func findGeoCode(records [][]string, val string, col int) GeoCode {
 			geoCode.Lon = row[2]
 		}
 	}
-	return geoCode
+	return geoCode, errors.New("Couldn't find GeoCode")
 }
 
 func profileAssignment(temp float64) string {
@@ -124,8 +114,14 @@ func profileAssignment(temp float64) string {
 
 //[]*o.OrderRecord
 func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
-	orders := ConvertAllZips(r)
+	orders, err := ConvertAllZips(r)
+	if err != nil {
+		fmt.Println("Zip conversion failure ::", err)
+	}
 	geoZips, err := geocodeZips()
+	if err != nil {
+		fmt.Println("Geocode Error occured! ::", err)
+	}
 
 	newOrders := []o.OrderRecord{}
 
@@ -155,26 +151,29 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 			ItemUnitPrice:   order.ItemUnitPrice,
 			ItemName:        order.ItemName,
 		}
-
+		// Where the magic happens
+		//
 		if !isStringEmpty(order.PostalCode) {
-			gz := findGeoCode(geoZips, order.PostalCode, 0)
-			temp := tempCheck(gz)
+			gz, err := findGeoCode(geoZips, order.PostalCode, 0)
+			if err != nil {
+				fmt.Println("Find GeoCode Failed ::", err)
+			}
+			temp, err := tempCheck(gz)
+			if err != nil {
+				fmt.Println("Temperature Check Failed ::", err)
+			}
 			thisOrder.AvgTemp = temp
 			thisOrder.CustomField3 = profileAssignment(temp)
 			newOrders = append(newOrders, thisOrder)
 		} else if isStringEmpty(order.PostalCode) {
 			newOrders = append(newOrders, thisOrder)
 		} else {
-			fmt.Println("something done broked")
+			fmt.Println("Get Temps Failed")
 		}
-
-		// fmt.Printf("row %v \n", row)
-		//fmt.Printf("orderFullName: %v \n", thisOrder.BuyerFullName)
 
 	}
 
 	return newOrders, err
-
 }
 
 func longitude(input string) string {
@@ -196,7 +195,7 @@ func latitude(input string) string {
 }
 
 // string
-func tempCheck(gc GeoCode) float64 {
+func tempCheck(gc GeoCode) (float64, error) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
 	// TODO This needs to run at 60 req/minute
@@ -207,7 +206,7 @@ func tempCheck(gc GeoCode) float64 {
 	// returns F instead of K
 	imp := "&units=imperial"
 	// 3 days of forecast instead of 5
-	cnt := "&cnt=24"
+	count := "&cnt=24"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	parsedUrl, err := url.Parse(link)
@@ -215,7 +214,7 @@ func tempCheck(gc GeoCode) float64 {
 		fmt.Println("parsing error ::", err)
 	}
 
-	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + cnt + imp)
+	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + count + imp)
 	if err != nil {
 		fmt.Println("HTTP request error ::", err)
 	}
@@ -229,21 +228,21 @@ func tempCheck(gc GeoCode) float64 {
 	if err != nil {
 		fmt.Println("json unmarshalling error ::", err)
 	}
-	temp := tempAvg(weather.List)
+	temp, err := tempAvg(weather.List)
 	// fmt.Printf("avg: %v \n", temp)
-	return math.Round(temp*100) / 100
+	return (math.Round(temp*100) / 100), err
 }
 
-func tempAvg(r o.List) float64 {
+func tempAvg(r o.List) (float64, error) {
 	total := 0.0
 	len := float64(len(r))
 	for _, v := range r {
 		total = total + v.Main.Temp
 		// fmt.Printf("dt: %v \n", v.Dt_txt)
 	}
-	// fmt.Printf("list? %v \n", r)
-	// fmt.Printf("total? %v \n", total)
-	// fmt.Printf("len? %v \n", len)
-	return total / len
+
+	avg := total / len
+
+	return avg, errors.New("couldn't find average temperature")
 
 }
