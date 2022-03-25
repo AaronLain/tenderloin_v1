@@ -194,7 +194,6 @@ func latitude(input string) string {
 	return output
 }
 
-// string
 func tempCheck(gc GeoCode) (float64, error) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
@@ -228,8 +227,9 @@ func tempCheck(gc GeoCode) (float64, error) {
 	if err != nil {
 		fmt.Println("json unmarshalling error ::", err)
 	}
+
 	temp, err := tempAvg(weather.List)
-	// fmt.Printf("avg: %v \n", temp)
+	//this dumb thing makes the float have 2 decimal for some reason
 	return (math.Round(temp*100) / 100), err
 }
 
@@ -238,11 +238,10 @@ func tempAvg(r o.List) (float64, error) {
 	len := float64(len(r))
 	for _, v := range r {
 		total = total + v.Main.Temp
-		// fmt.Printf("dt: %v \n", v.Dt_txt)
 	}
 
 	avg := total / len
-
+	// you know how averages work. Is this too much error handling?
+	// this is getting verbose
 	return avg, errors.New("couldn't find average temperature")
-
 }

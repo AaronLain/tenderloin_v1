@@ -37,8 +37,8 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 	}
 	// check to see if filename already exists before creating
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
+		//this puts the csv in the local file
 		file, err := ioutil.TempFile("./", outputName)
-		fmt.Printf("file: %v", file.Name())
 		if err != nil {
 			fmt.Println("Can't create csv ::", err)
 		}
