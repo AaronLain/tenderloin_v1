@@ -5,9 +5,11 @@ import (
 	zip "ajl/tenderloin/zip"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 )
 
@@ -63,5 +65,16 @@ func initializeCSV() {
 }
 
 func main() {
+	router := gin.Default()
+	api := router.Group("/api")
+	{
+		api.GET("/zip", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{})
+		})
+	}
+
+	router.NoRoute(func(ctx *gin.Context) { ctx.JSON(http.StatusNotFound, gin.H{}) })
+
+	router.Run(":8080")
 	initializeCSV()
 }
