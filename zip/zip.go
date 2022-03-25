@@ -152,7 +152,7 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 			ItemName:        order.ItemName,
 		}
 		// Where the magic happens
-		//
+		// find the geocode, check the temp, apply the data accordingly
 		if !isStringEmpty(order.PostalCode) {
 			gz, err := findGeoCode(geoZips, order.PostalCode, 0)
 			if err != nil {
