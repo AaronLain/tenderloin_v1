@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 )
@@ -64,17 +65,37 @@ func initializeCSV() {
 
 }
 
-func main() {
+func initializeRouter() {
 	router := gin.Default()
+
+	router.Use(static.Serve("/api", static.LocalFile("./views", true)))
+
 	api := router.Group("/api")
 	{
-		api.GET("/zip", func(ctx *gin.Context) {
-			ctx.JSON(200, gin.H{})
+		api.GET("/", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "pong",
+			})
 		})
 	}
 
 	router.NoRoute(func(ctx *gin.Context) { ctx.JSON(http.StatusNotFound, gin.H{}) })
 
+	api.GET("/zip", zipHandler)
+
 	router.Run(":8080")
-	initializeCSV()
+}
+
+func zipHandler(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "zipHandler not yet implemented",
+	})
+}
+
+func main() {
+
+	initializeRouter()
+
+	// initializeCSV()
 }
