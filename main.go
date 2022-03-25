@@ -28,9 +28,11 @@ func csvReader(s string) ([]*orders.OrderRecord, error) {
 }
 
 func csvWriter(input string, o []*orders.OrderRecord) {
+	// string manipulation because stuff is picky
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_"
+	// get the temps and bring back the fresh data
 	newRecords, err := zip.GetTemps(o)
 	if err != nil {
 		fmt.Println("Failed to get new records ::", err)
