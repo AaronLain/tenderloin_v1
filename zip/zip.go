@@ -171,7 +171,11 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		} else {
 			fmt.Println("Get Temps Failed")
 		}
-		sleepAlert(1100)
+		// sleep only when a postal code is present
+		if !isStringEmpty(order.PostalCode) {
+			sleepAlert(1100)
+		}
+
 	}
 
 	return newOrders, err
