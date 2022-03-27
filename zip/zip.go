@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 type OrderNum []string
@@ -156,11 +157,11 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		if !isStringEmpty(order.PostalCode) {
 			gz, err := findGeoCode(geoZips, order.PostalCode, 0)
 			if err != nil {
-				fmt.Println("Find GeoCode Failed ::", err)
+				fmt.Println("No GeoCode Found ::", err)
 			}
 			temp, err := tempCheck(gz)
 			if err != nil {
-				fmt.Println("Temperature Check Failed ::", err)
+				fmt.Println("No Temp Found ::", err)
 			}
 			thisOrder.AvgTemp = temp
 			thisOrder.CustomField3 = profileAssignment(temp)
@@ -170,10 +171,15 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		} else {
 			fmt.Println("Get Temps Failed")
 		}
-
+		sleepAlert(1100)
 	}
 
 	return newOrders, err
+}
+
+func sleepAlert(t time.Duration) {
+	time.Sleep(t * time.Millisecond)
+	fmt.Println("Sleeping...")
 }
 
 func longitude(input string) string {

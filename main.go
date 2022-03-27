@@ -95,7 +95,7 @@ func zipHandler(c *gin.Context) {
 
 func main() {
 
-	initializeRouter()
+	//initializeRouter()
 
-	// initializeCSV()
+	initializeCSV()
 }
