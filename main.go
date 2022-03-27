@@ -5,40 +5,47 @@ import (
 	zip "ajl/tenderloin/zip"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 )
 
-func csvReader(s string) []*orders.OrderRecord {
+func csvReader(s string) ([]*orders.OrderRecord, error) {
 	recordFile, err := os.Open(s)
 	if err != nil {
-		fmt.Println("Error occured! ::", err)
+		fmt.Println("Reader Error occured! ::", err)
 	}
 
 	records := []*orders.OrderRecord{}
 
 	if err := gocsv.UnmarshalFile(recordFile, &records); err != nil {
-		panic(err)
+		fmt.Println("Unmarshalling Error occured! ::", err)
 	}
 	defer recordFile.Close()
 
-	return records
+	return records, err
 }
 
-
 func csvWriter(input string, o []*orders.OrderRecord) {
+	// string manipulation because stuff is picky
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_"
-	newRecords := zip.GetTemps(o)
-	// check to see if filename already exists before creating!
+	// get the temps and bring back the fresh data
+	newRecords, err := zip.GetTemps(o)
+	if err != nil {
+		fmt.Println("Failed to get new records ::", err)
+	}
+	// check to see if filename already exists before creating
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
+		//this puts the csv in the local file
 		file, err := ioutil.TempFile("./", outputName)
-		fmt.Printf("file: %v", file.Name())
 		if err != nil {
-			fmt.Println("Couldn't create csv ::", err)
+			fmt.Println("Can't create csv ::", err)
 		}
 		gocsv.MarshalFile(&newRecords, file)
 	}
@@ -49,12 +56,46 @@ func initializeCSV() {
 	input := strings.Join(os.Args[1:], "")
 	fileName := localString + input
 
-	records := csvReader(fileName)
+	records, err := csvReader(fileName)
+	if err != nil {
+		fmt.Println("Can't initialize reader ::", err)
+	}
 
-	defer zip.GetTemps(records)
+	csvWriter(fileName, records)
 
 }
 
+func initializeRouter() {
+	router := gin.Default()
+
+	router.Use(static.Serve("/api", static.LocalFile("./views", true)))
+
+	api := router.Group("/api")
+	{
+		api.GET("/", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "pong",
+			})
+		})
+	}
+
+	router.NoRoute(func(ctx *gin.Context) { ctx.JSON(http.StatusNotFound, gin.H{}) })
+
+	api.GET("/zip", zipHandler)
+
+	router.Run(":8080")
+}
+
+func zipHandler(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "zipHandler not yet implemented",
+	})
+}
+
 func main() {
+
+	//initializeRouter()
+
 	initializeCSV()
 }
