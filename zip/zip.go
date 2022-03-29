@@ -67,7 +67,7 @@ func ConvertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 		}
 		continue
 	}
-	return r, errors.New("Couldn't convert zip codes")
+	return r, errors.New("couldn't convert zip codes")
 }
 
 func geocodeZips() ([][]string, error) {
@@ -93,7 +93,7 @@ func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
 			geoCode.Lon = row[2]
 		}
 	}
-	return geoCode, errors.New("Couldn't find GeoCode")
+	return geoCode, errors.New("couldn't find geocode")
 }
 
 func profileAssignment(temp float64) string {
@@ -110,22 +110,15 @@ func profileAssignment(temp float64) string {
 	} else {
 		return "No Temp Found"
 	}
-
 }
 
-//[]*o.OrderRecord
-func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
-	orders, err := ConvertAllZips(r)
-	if err != nil {
-		fmt.Println("Zip conversion failure ::", err)
-	}
-	geoZips, err := geocodeZips()
-	if err != nil {
-		fmt.Println("Geocode Error occured! ::", err)
-	}
+func sleepAlert(t time.Duration) {
+	time.Sleep(t * time.Millisecond)
+	fmt.Println("Sleeping...")
+}
 
+func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecord, error) {
 	newOrders := []o.OrderRecord{}
-
 	for _, order := range orders {
 		thisOrder := o.OrderRecord{
 			OrderNum:        order.OrderNum,
@@ -175,15 +168,26 @@ func GetTemps(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		if !isStringEmpty(order.PostalCode) {
 			sleepAlert(1100)
 		}
+	}
+	return newOrders, errors.New("couldn't create new orders")
+}
 
+func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
+	orders, err := ConvertAllZips(r)
+	if err != nil {
+		fmt.Println("Zip conversion failure ::", err)
+	}
+	geoZips, err := geocodeZips()
+	if err != nil {
+		fmt.Println("Geocode Error occured! ::", err)
+	}
+
+	newOrders, err := getWeatherData(orders, geoZips)
+	if err != nil {
+		fmt.Printf("Coudn't get Weather Data ::")
 	}
 
 	return newOrders, err
-}
-
-func sleepAlert(t time.Duration) {
-	time.Sleep(t * time.Millisecond)
-	fmt.Println("Sleeping...")
 }
 
 func longitude(input string) string {
@@ -239,7 +243,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 	}
 
 	temp, err := tempAvg(weather.List)
-	//this dumb thing makes the float have 2 decimal for some reason
+	// this dumb thing makes the float have 2 decimal for some reason
 	return (math.Round(temp*100) / 100), err
 }
 
@@ -252,6 +256,5 @@ func tempAvg(r o.List) (float64, error) {
 
 	avg := total / len
 	// you know how averages work. Is this too much error handling?
-	// this is getting verbose
 	return avg, errors.New("couldn't find average temperature")
 }

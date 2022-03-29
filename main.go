@@ -37,15 +37,18 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_"
+
 	// get the temps and bring back the fresh data
-	newRecords, err := zip.GetTemps(o)
+	newRecords, err := zip.CreateNewOrders(o)
+	if err != nil {
+		fmt.Println("Failed to get new records ::", err)
+	}
+
 	// random number for filename creation
 	randomTime := rand.NewSource(time.Now().UnixNano())
 	randSuffix := randomTime.Int63()
 	str_randSuffix := strconv.FormatInt(randSuffix, 10)
-	if err != nil {
-		fmt.Println("Failed to get new records ::", err)
-	}
+
 	// check to see if filename already exists before creating
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
 		//this puts the csv in the local file
