@@ -4,10 +4,12 @@ import (
 	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
 	"fmt"
-	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -35,15 +37,22 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_"
+
 	// get the temps and bring back the fresh data
-	newRecords, err := zip.GetTemps(o)
+	newRecords, err := zip.CreateNewOrders(o)
 	if err != nil {
 		fmt.Println("Failed to get new records ::", err)
 	}
+
+	// random number for filename creation
+	randomTime := rand.NewSource(time.Now().UnixNano())
+	randSuffix := randomTime.Int63()
+	str_randSuffix := strconv.FormatInt(randSuffix, 10)
+
 	// check to see if filename already exists before creating
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
 		//this puts the csv in the local file
-		file, err := ioutil.TempFile("./", outputName)
+		file, err := os.Create(outputName + str_randSuffix + ".csv")
 		if err != nil {
 			fmt.Println("Can't create csv ::", err)
 		}
