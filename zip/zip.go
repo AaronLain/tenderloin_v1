@@ -241,7 +241,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 		fmt.Println("read i/o error ::", err)
 	}
 
-	// unmarshal data into workable format
+	// unmarshal json into WeatherData format
 	err = json.Unmarshal([]byte(respJSON), &weather)
 	if err != nil {
 		fmt.Println("json unmarshalling error ::", err)
@@ -255,7 +255,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 }
 
 func findMaxTemp(r o.List) (float64, error) {
-	// build an array of temps
+	// build an array of temps from the List
 	nums := []float64{}
 	for _, v := range r {
 		nums = append(nums, v.Main.Temp_max)
