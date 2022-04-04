@@ -58,10 +58,11 @@ func FirstFiveZip(zip string) string {
 	return zip
 }
 
-func ConvertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
+func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 	for _, v := range r {
 		// Skips rows that are line items (empty fields)
-		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
+		if (!isStringEmpty(v.BuyerFullName)) &&
+			(!isStringEmpty(v.RecFullName)) {
 			zipFiveDig := FirstFiveZip(v.PostalCode)
 			v.PostalCode = zipFiveDig
 		}
@@ -173,10 +174,11 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 }
 
 func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
-	orders, err := ConvertAllZips(r)
+	orders, err := convertAllZips(r)
 	if err != nil {
 		fmt.Println("Zip conversion failure ::", err)
 	}
+
 	geoZips, err := geocodeZips()
 	if err != nil {
 		fmt.Println("Geocode Error occured! ::", err)
@@ -248,13 +250,17 @@ func tempCheck(gc GeoCode) (float64, error) {
 }
 
 func tempAvg(r o.List) (float64, error) {
-	total := 0.0
-	len := float64(len(r))
+	nums := []float64{}
 	for _, v := range r {
-		total = total + v.Main.Temp
+		nums = append(nums, v.Main.Temp_max)
 	}
 
-	avg := total / len
-	// you know how averages work. Is this too much error handling?
-	return avg, errors.New("couldn't find average temperature")
+	max := nums[0]
+	for _, vv := range nums {
+		if vv < max {
+			max = vv
+		}
+	}
+	fmt.Printf("max: %v", max)
+	return max, errors.New("couldn't find average temperature")
 }
