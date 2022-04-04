@@ -213,48 +213,55 @@ func latitude(input string) string {
 func tempCheck(gc GeoCode) (float64, error) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
-	// TODO This needs to run at 60 req/minute
-	// whether that's a quick burst of 60 and a pause
-	// or one req every ~1.1 seconds
+
+	// manipulate lat/lon strings for api call
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
+
 	// returns F instead of K
 	imp := "&units=imperial"
+
 	// 3 days of forecast instead of 5
 	count := "&cnt=24"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
+	// parse the URL
 	parsedUrl, err := url.Parse(link)
 	if err != nil {
 		fmt.Println("parsing error ::", err)
 	}
-
+	// make the call to the weather api
 	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + count + imp)
 	if err != nil {
 		fmt.Println("HTTP request error ::", err)
 	}
-
+	// read response data
 	respJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("read i/o error ::", err)
 	}
 
+	// unmarshal data into workable format
 	err = json.Unmarshal([]byte(respJSON), &weather)
 	if err != nil {
 		fmt.Println("json unmarshalling error ::", err)
 	}
 
+	// find the max temp of the 24 received
 	temp, err := findMaxTemp(weather.List)
+
 	// this dumb thing makes the float have 2 decimal for some reason
 	return (math.Round(temp*100) / 100), err
 }
 
 func findMaxTemp(r o.List) (float64, error) {
+	// build an array of temps
 	nums := []float64{}
 	for _, v := range r {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
+	// find the max and return it
 	max := nums[0]
 	for _, vv := range nums {
 		if vv < max {
