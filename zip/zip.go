@@ -244,12 +244,12 @@ func tempCheck(gc GeoCode) (float64, error) {
 		fmt.Println("json unmarshalling error ::", err)
 	}
 
-	temp, err := tempAvg(weather.List)
+	temp, err := findMaxTemp(weather.List)
 	// this dumb thing makes the float have 2 decimal for some reason
 	return (math.Round(temp*100) / 100), err
 }
 
-func tempAvg(r o.List) (float64, error) {
+func findMaxTemp(r o.List) (float64, error) {
 	nums := []float64{}
 	for _, v := range r {
 		nums = append(nums, v.Main.Temp_max)
