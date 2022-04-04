@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -148,7 +149,8 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 		}
 		// Where the magic happens
 		// find the geocode, check the temp, apply the data accordingly
-		if !isStringEmpty(order.PostalCode) {
+		if !isStringEmpty(order.PostalCode) && !isStringEmpty(order.City) {
+			sleepAlert(1100)
 			gz, err := findGeoCode(geoZips, order.PostalCode, 0)
 			if err != nil {
 				fmt.Println("No GeoCode Found ::", err)
@@ -164,10 +166,6 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			newOrders = append(newOrders, thisOrder)
 		} else {
 			fmt.Println("Get Temps Failed")
-		}
-		// sleep only when a postal code is present
-		if !isStringEmpty(order.PostalCode) {
-			sleepAlert(1100)
 		}
 	}
 	return newOrders, errors.New("couldn't create new orders")
@@ -230,11 +228,13 @@ func tempCheck(gc GeoCode) (float64, error) {
 	if err != nil {
 		fmt.Println("parsing error ::", err)
 	}
+
 	// make the call to the weather api
 	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + count + imp)
 	if err != nil {
 		fmt.Println("HTTP request error ::", err)
 	}
+
 	// read response data
 	respJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -256,18 +256,18 @@ func tempCheck(gc GeoCode) (float64, error) {
 
 func findMaxTemp(r o.List) (float64, error) {
 	// build an array of temps from the List
-	nums := []float64{}
+	var sortedNums, nums []float64
 	for _, v := range r {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
-	// find the max and return it
-	max := nums[0]
-	for _, vv := range nums {
-		if vv < max {
-			max = vv
-		}
-	}
-	fmt.Printf("max: %v", max)
-	return max, errors.New("couldn't find average temperature")
+	sortedNums = sort.Float64Slice(nums)
+
+	fmt.Printf("nums: %v \n", sortedNums)
+
+	max := sortedNums[0]
+
+	fmt.Printf("max: %v \n", max)
+
+	return math.Round(max), errors.New("couldn't find average temperature")
 }
