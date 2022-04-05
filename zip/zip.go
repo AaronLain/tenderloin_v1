@@ -73,7 +73,7 @@ func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 }
 
 func geocodeZips() ([][]string, error) {
-	orderCsv, err := os.Open("./zip/ZipGeoCode.csv")
+	orderCsv, err := os.Open("./zip/GeoZip2.csv")
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
@@ -251,23 +251,28 @@ func tempCheck(gc GeoCode) (float64, error) {
 	temp, err := findMaxTemp(weather.List)
 
 	// this dumb thing makes the float have 2 decimal for some reason
-	return (math.Round(temp*100) / 100), err
+	return temp, err
 }
 
 func findMaxTemp(r o.List) (float64, error) {
 	// build an array of temps from the List
-	var sortedNums, nums []float64
+	var nums []float64
+	var max float64
 	for _, v := range r {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
-	sortedNums = sort.Float64Slice(nums)
+	fmt.Printf("nums: %v \n", nums)
 
-	fmt.Printf("nums: %v \n", sortedNums)
+	sort.Float64s(nums)
 
-	max := sortedNums[0]
+	fmt.Printf("nums2: %v \n", nums)
 
-	fmt.Printf("max: %v \n", max)
+	if r != nil {
+		max = nums[len(nums)-1]
+	}
+
+	fmt.Printf("max: %v \n", math.Round(max))
 
 	return math.Round(max), errors.New("couldn't find average temperature")
 }
