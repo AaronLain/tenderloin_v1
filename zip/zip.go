@@ -41,22 +41,17 @@ func isStringEmpty(str ...string) bool {
 }
 
 // Keeps only base zip
-func FirstFiveZip(zip string) string {
+func FirstFiveZip(zip string) (string, error) {
 	counter := 0
 	for i := range zip {
 		if i == 5 {
-			return zip[:i]
+			return zip[:i], errors.New("couldn't truncate zip")
 		}
 		counter++
 	}
-	// Adds a zero to NE zips that start with 0
-	if len(zip) < 5 {
-		z := "0"
-		s := z + zip
+	fmt.Printf("zip: %v\n", zip)
 
-		return s
-	}
-	return zip
+	return zip, nil
 }
 
 func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
@@ -64,16 +59,20 @@ func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) &&
 			(!isStringEmpty(v.RecFullName)) {
-			zipFiveDig := FirstFiveZip(v.PostalCode)
+			zipFiveDig, err := FirstFiveZip(v.PostalCode)
+			if err != nil {
+				fmt.Print("Zip code error ::", err)
+			}
+			fmt.Printf("zipFiveDig: %v\n", zipFiveDig)
 			v.PostalCode = zipFiveDig
 		}
 		continue
 	}
-	return r, errors.New("couldn't convert zip codes")
+	return r, nil
 }
 
 func geocodeZips() ([][]string, error) {
-	orderCsv, err := os.Open("./zip/GeoZip2.csv")
+	orderCsv, err := os.Open("./zip/GeoZip3.csv")
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
@@ -84,7 +83,7 @@ func geocodeZips() ([][]string, error) {
 		fmt.Println("Geocode Reader Error occured! ::", err)
 	}
 
-	return geoZips, err
+	return geoZips, nil
 }
 
 func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
@@ -95,7 +94,7 @@ func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
 			geoCode.Lon = row[2]
 		}
 	}
-	return geoCode, errors.New("couldn't find geocode")
+	return geoCode, nil
 }
 
 func profileAssignment(temp float64) string {
@@ -155,6 +154,7 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			if err != nil {
 				fmt.Println("No GeoCode Found ::", err)
 			}
+			fmt.Printf("order.PostalCode: %v", order.PostalCode)
 			temp, err := tempCheck(gz)
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
@@ -168,7 +168,7 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			fmt.Println("Get Temps Failed")
 		}
 	}
-	return newOrders, errors.New("couldn't create new orders")
+	return newOrders, nil
 }
 
 func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
@@ -187,7 +187,7 @@ func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		fmt.Printf("Coudn't get Weather Data ::")
 	}
 
-	return newOrders, err
+	return newOrders, nil
 }
 
 func longitude(input string) string {
@@ -244,14 +244,17 @@ func tempCheck(gc GeoCode) (float64, error) {
 	// unmarshal json into WeatherData format
 	err = json.Unmarshal([]byte(respJSON), &weather)
 	if err != nil {
-		fmt.Println("json unmarshalling error ::", err)
+		fmt.Printf("json unmarshalling error :: %v\n", err)
 	}
 
 	// find the max temp of the 24 received
 	temp, err := findMaxTemp(weather.List)
+	if err != nil {
+		fmt.Printf("Couldn't find max temp :: %v\n", err)
+	}
 
 	// this dumb thing makes the float have 2 decimal for some reason
-	return temp, err
+	return temp, nil
 }
 
 func findMaxTemp(r o.List) (float64, error) {
@@ -262,17 +265,17 @@ func findMaxTemp(r o.List) (float64, error) {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
-	fmt.Printf("nums: %v \n", nums)
+	//fmt.Printf("nums: %v \n", nums)
 
 	sort.Float64s(nums)
 
-	fmt.Printf("nums2: %v \n", nums)
+	//fmt.Printf("nums2: %v \n", nums)
 
 	if r != nil {
 		max = nums[len(nums)-1]
 	}
 
-	fmt.Printf("max: %v \n", math.Round(max))
+	//fmt.Printf("max: %v \n", math.Round(max))
 
-	return math.Round(max), errors.New("couldn't find average temperature")
+	return math.Round(max), nil
 }
