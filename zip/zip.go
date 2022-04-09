@@ -54,8 +54,8 @@ func FirstFiveZip(zip string) (string, error) {
 	return zip, nil
 }
 
-func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
-	for _, v := range r {
+func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
+	for _, v := range order {
 		// Skips rows that are line items (empty fields)
 		if (!isStringEmpty(v.BuyerFullName)) &&
 			(!isStringEmpty(v.RecFullName)) {
@@ -68,7 +68,7 @@ func convertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
 		}
 		continue
 	}
-	return r, nil
+	return order, nil
 }
 
 func geocodeZips() ([][]string, error) {
@@ -76,13 +76,13 @@ func geocodeZips() ([][]string, error) {
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
-	defer orderCsv.Close()
 
 	geoZips, err := csv.NewReader(orderCsv).ReadAll()
 	if err != nil {
 		fmt.Println("Geocode Reader Error occured! ::", err)
 	}
 
+	defer orderCsv.Close()
 	return geoZips, nil
 }
 
