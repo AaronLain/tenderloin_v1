@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -40,49 +41,49 @@ func isStringEmpty(str ...string) bool {
 }
 
 // Keeps only base zip
-func FirstFiveZip(zip string) string {
+func FirstFiveZip(zip string) (string, error) {
 	counter := 0
 	for i := range zip {
 		if i == 5 {
-			return zip[:i]
+			return zip[:i], errors.New("couldn't truncate zip")
 		}
 		counter++
 	}
-	// Adds a zero to NE zips that start with 0
-	if len(zip) < 5 {
-		z := "0"
-		s := z + zip
+	fmt.Printf("zip: %v\n", zip)
 
-		return s
-	}
-	return zip
+	return zip, nil
 }
 
-func ConvertAllZips(r []*o.OrderRecord) ([]*o.OrderRecord, error) {
-	for _, v := range r {
+func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
+	for _, v := range order {
 		// Skips rows that are line items (empty fields)
-		if (!isStringEmpty(v.BuyerFullName)) && (!isStringEmpty(v.RecFullName)) {
-			zipFiveDig := FirstFiveZip(v.PostalCode)
+		if (!isStringEmpty(v.BuyerFullName)) &&
+			(!isStringEmpty(v.RecFullName)) {
+			zipFiveDig, err := FirstFiveZip(v.PostalCode)
+			if err != nil {
+				fmt.Print("Zip code error ::", err)
+			}
+			fmt.Printf("zipFiveDig: %v\n", zipFiveDig)
 			v.PostalCode = zipFiveDig
 		}
 		continue
 	}
-	return r, errors.New("couldn't convert zip codes")
+	return order, nil
 }
 
 func geocodeZips() ([][]string, error) {
-	orderCsv, err := os.Open("./zip/ZipGeoCode.csv")
+	orderCsv, err := os.Open("./zip/GeoZip3.csv")
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
-	defer orderCsv.Close()
 
 	geoZips, err := csv.NewReader(orderCsv).ReadAll()
 	if err != nil {
 		fmt.Println("Geocode Reader Error occured! ::", err)
 	}
 
-	return geoZips, err
+	defer orderCsv.Close()
+	return geoZips, nil
 }
 
 func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
@@ -93,7 +94,7 @@ func findGeoCode(records [][]string, val string, col int) (GeoCode, error) {
 			geoCode.Lon = row[2]
 		}
 	}
-	return geoCode, errors.New("couldn't find geocode")
+	return geoCode, nil
 }
 
 func profileAssignment(temp float64) string {
@@ -147,11 +148,13 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 		}
 		// Where the magic happens
 		// find the geocode, check the temp, apply the data accordingly
-		if !isStringEmpty(order.PostalCode) {
+		if !isStringEmpty(order.PostalCode) && !isStringEmpty(order.City) {
+			sleepAlert(1100)
 			gz, err := findGeoCode(geoZips, order.PostalCode, 0)
 			if err != nil {
 				fmt.Println("No GeoCode Found ::", err)
 			}
+			fmt.Printf("order.PostalCode: %v", order.PostalCode)
 			temp, err := tempCheck(gz)
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
@@ -164,19 +167,16 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 		} else {
 			fmt.Println("Get Temps Failed")
 		}
-		// sleep only when a postal code is present
-		if !isStringEmpty(order.PostalCode) {
-			sleepAlert(1100)
-		}
 	}
-	return newOrders, errors.New("couldn't create new orders")
+	return newOrders, nil
 }
 
 func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
-	orders, err := ConvertAllZips(r)
+	orders, err := convertAllZips(r)
 	if err != nil {
 		fmt.Println("Zip conversion failure ::", err)
 	}
+
 	geoZips, err := geocodeZips()
 	if err != nil {
 		fmt.Println("Geocode Error occured! ::", err)
@@ -187,7 +187,7 @@ func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		fmt.Printf("Coudn't get Weather Data ::")
 	}
 
-	return newOrders, err
+	return newOrders, nil
 }
 
 func longitude(input string) string {
@@ -211,50 +211,71 @@ func latitude(input string) string {
 func tempCheck(gc GeoCode) (float64, error) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
-	// TODO This needs to run at 60 req/minute
-	// whether that's a quick burst of 60 and a pause
-	// or one req every ~1.1 seconds
+
+	// manipulate lat/lon strings for api call
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
+
 	// returns F instead of K
 	imp := "&units=imperial"
+
 	// 3 days of forecast instead of 5
 	count := "&cnt=24"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
+	// parse the URL
 	parsedUrl, err := url.Parse(link)
 	if err != nil {
 		fmt.Println("parsing error ::", err)
 	}
 
+	// make the call to the weather api
 	resp, err := http.Get(parsedUrl.String() + lat + lon + apiKey + count + imp)
 	if err != nil {
 		fmt.Println("HTTP request error ::", err)
 	}
 
+	// read response data
 	respJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("read i/o error ::", err)
 	}
 
+	// unmarshal json into WeatherData format
 	err = json.Unmarshal([]byte(respJSON), &weather)
 	if err != nil {
-		fmt.Println("json unmarshalling error ::", err)
+		fmt.Printf("json unmarshalling error :: %v\n", err)
 	}
 
-	temp, err := tempAvg(weather.List)
+	// find the max temp of the 24 received
+	temp, err := findMaxTemp(weather.List)
+	if err != nil {
+		fmt.Printf("Couldn't find max temp :: %v\n", err)
+	}
+
 	// this dumb thing makes the float have 2 decimal for some reason
-	return (math.Round(temp*100) / 100), err
+	return temp, nil
 }
 
-func tempAvg(r o.List) (float64, error) {
-	total := 0.0
-	len := float64(len(r))
+func findMaxTemp(r o.List) (float64, error) {
+	// build an array of temps from the List
+	var nums []float64
+	var max float64
 	for _, v := range r {
-		total = total + v.Main.Temp
+		nums = append(nums, v.Main.Temp_max)
 	}
 
-	avg := total / len
-	// you know how averages work. Is this too much error handling?
-	return avg, errors.New("couldn't find average temperature")
+	//fmt.Printf("nums: %v \n", nums)
+
+	sort.Float64s(nums)
+
+	//fmt.Printf("nums2: %v \n", nums)
+
+	if r != nil {
+		max = nums[len(nums)-1]
+	}
+
+	//fmt.Printf("max: %v \n", math.Round(max))
+
+	return math.Round(max), nil
 }
