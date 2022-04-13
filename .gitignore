@@ -1,6 +1,7 @@
 # Binaries for programs and plugins
 orders/api.go
 main
+Excel*
 *.exe
 *.exe~
 *.dll

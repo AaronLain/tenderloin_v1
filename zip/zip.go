@@ -44,14 +44,14 @@ func isStringEmpty(str ...string) bool {
 func FirstFiveZip(zip string) (string, error) {
 	counter := 0
 	for i := range zip {
-		if i == 5 {
-			return zip[:i], errors.New("couldn't truncate zip")
+		if i <= 5 && i > 3 {
+			return zip[:i], nil
 		}
 		counter++
 	}
 	fmt.Printf("zip: %v\n", zip)
 
-	return zip, nil
+	return "Check Zip", errors.New("zip is too big or too small")
 }
 
 func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
