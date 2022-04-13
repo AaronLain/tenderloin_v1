@@ -184,7 +184,7 @@ func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 
 	newOrders, err := getWeatherData(orders, geoZips)
 	if err != nil {
-		fmt.Printf("Coudn't get Weather Data ::")
+		fmt.Println("Coudn't get Weather Data ::", err)
 	}
 
 	return newOrders, nil
@@ -253,7 +253,6 @@ func tempCheck(gc GeoCode) (float64, error) {
 		fmt.Printf("Couldn't find max temp :: %v\n", err)
 	}
 
-	// this dumb thing makes the float have 2 decimal for some reason
 	return temp, nil
 }
 
@@ -265,17 +264,14 @@ func findMaxTemp(r o.List) (float64, error) {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
-	//fmt.Printf("nums: %v \n", nums)
-
+	// in order to find the highest temp, we must sort the nums array
 	sort.Float64s(nums)
 
-	//fmt.Printf("nums2: %v \n", nums)
-
+	// we then set the max variable to the last number (highest) in nums
 	if r != nil {
 		max = nums[len(nums)-1]
 	}
 
-	//fmt.Printf("max: %v \n", math.Round(max))
-
+	// return rounded result (or 0 if nothing is input)
 	return math.Round(max), nil
 }
