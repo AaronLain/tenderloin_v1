@@ -4,7 +4,6 @@ import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -44,14 +43,14 @@ func isStringEmpty(str ...string) bool {
 func FirstFiveZip(zip string) (string, error) {
 	counter := 0
 	for i := range zip {
-		if i <= 5 && i > 3 {
-			return zip[:i], nil
+		if counter == 5 {
+			zip = zip[:i]
 		}
 		counter++
 	}
 	fmt.Printf("zip: %v\n", zip)
 
-	return "Check Zip", errors.New("zip is too big or too small")
+	return zip, nil
 }
 
 func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
@@ -72,7 +71,7 @@ func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
 }
 
 func geocodeZips() ([][]string, error) {
-	orderCsv, err := os.Open("./zip/GeoZip3.csv")
+	orderCsv, err := os.Open("./zip/US_GEO_ZIPS.csv")
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
@@ -154,7 +153,8 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			if err != nil {
 				fmt.Println("No GeoCode Found ::", err)
 			}
-			fmt.Printf("order.PostalCode: %v", order.PostalCode)
+
+			// remote API temp check
 			temp, err := tempCheck(gz)
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
@@ -216,6 +216,9 @@ func tempCheck(gc GeoCode) (float64, error) {
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
 
+	fmt.Printf("lat: %v", lat)
+	fmt.Printf("lon: %v", lon)
+
 	// returns F instead of K
 	imp := "&units=imperial"
 
@@ -243,6 +246,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 
 	// unmarshal json into WeatherData format
 	err = json.Unmarshal([]byte(respJSON), &weather)
+	fmt.Printf("weather: %v", weather)
 	if err != nil {
 		fmt.Printf("json unmarshalling error :: %v\n", err)
 	}
