@@ -1,6 +1,7 @@
 # Binaries for programs and plugins
 orders/api.go
 main
+Excel*
 *.exe
 *.exe~
 *.dll
@@ -8,8 +9,9 @@ main
 *.dylib
 *.swp
 *.swo
-zip/ZipGeoCode2.csv
+zip/GeoZip3.csv
 Orders_*.csv
+zip/GeoZip*.csv
 # Test binary, built with `go test -c`
 *.test
 

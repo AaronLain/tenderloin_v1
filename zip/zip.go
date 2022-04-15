@@ -4,7 +4,6 @@ import (
 	o "ajl/tenderloin/orders"
 	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -44,8 +43,8 @@ func isStringEmpty(str ...string) bool {
 func FirstFiveZip(zip string) (string, error) {
 	counter := 0
 	for i := range zip {
-		if i == 5 {
-			return zip[:i], errors.New("couldn't truncate zip")
+		if counter == 5 {
+			zip = zip[:i]
 		}
 		counter++
 	}
@@ -72,7 +71,7 @@ func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
 }
 
 func geocodeZips() ([][]string, error) {
-	orderCsv, err := os.Open("./zip/GeoZip3.csv")
+	orderCsv, err := os.Open("./zip/US_GEO_ZIPS.csv")
 	if err != nil {
 		fmt.Println("Couldn't Open GeoCode file! ::", err)
 	}
@@ -154,7 +153,8 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			if err != nil {
 				fmt.Println("No GeoCode Found ::", err)
 			}
-			fmt.Printf("order.PostalCode: %v", order.PostalCode)
+
+			// remote API temp check
 			temp, err := tempCheck(gz)
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
@@ -184,7 +184,7 @@ func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 
 	newOrders, err := getWeatherData(orders, geoZips)
 	if err != nil {
-		fmt.Printf("Coudn't get Weather Data ::")
+		fmt.Println("Coudn't get Weather Data ::", err)
 	}
 
 	return newOrders, nil
@@ -216,6 +216,9 @@ func tempCheck(gc GeoCode) (float64, error) {
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
 
+	fmt.Printf("lat: %v", lat)
+	fmt.Printf("lon: %v", lon)
+
 	// returns F instead of K
 	imp := "&units=imperial"
 
@@ -243,6 +246,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 
 	// unmarshal json into WeatherData format
 	err = json.Unmarshal([]byte(respJSON), &weather)
+	fmt.Printf("weather: %v", weather)
 	if err != nil {
 		fmt.Printf("json unmarshalling error :: %v\n", err)
 	}
@@ -253,7 +257,6 @@ func tempCheck(gc GeoCode) (float64, error) {
 		fmt.Printf("Couldn't find max temp :: %v\n", err)
 	}
 
-	// this dumb thing makes the float have 2 decimal for some reason
 	return temp, nil
 }
 
@@ -265,17 +268,14 @@ func findMaxTemp(r o.List) (float64, error) {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
-	//fmt.Printf("nums: %v \n", nums)
-
+	// in order to find the highest temp, we must sort the nums array
 	sort.Float64s(nums)
 
-	//fmt.Printf("nums2: %v \n", nums)
-
+	// we then set the max variable to the last number (highest) in nums
 	if r != nil {
 		max = nums[len(nums)-1]
 	}
 
-	//fmt.Printf("max: %v \n", math.Round(max))
-
+	// return rounded result (or 0 if nothing is input)
 	return math.Round(max), nil
 }
