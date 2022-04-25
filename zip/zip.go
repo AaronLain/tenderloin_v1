@@ -56,8 +56,8 @@ func FirstFiveZip(zip string) (string, error) {
 func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
 	for _, v := range order {
 		// Skips rows that are line items (empty fields)
-		if (!isStringEmpty(v.BuyerFullName)) &&
-			(!isStringEmpty(v.RecFullName)) {
+		if (!isStringEmpty(v.City)) &&
+			(!isStringEmpty(v.State)) {
 			zipFiveDig, err := FirstFiveZip(v.PostalCode)
 			if err != nil {
 				fmt.Print("Zip code error ::", err)
@@ -121,29 +121,15 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 	newOrders := []o.OrderRecord{}
 	for _, order := range orders {
 		thisOrder := o.OrderRecord{
-			OrderNum:        order.OrderNum,
-			OrderDate:       order.OrderDate,
-			DatePaid:        order.DatePaid,
-			Total:           order.Total,
-			AmountPaid:      order.AmountPaid,
-			Tax:             order.Tax,
-			ShippingPaid:    order.ShippingPaid,
-			ShippingService: order.ShippingService,
-			CustomField1:    order.CustomField1,
-			CustomField2:    order.CustomField2,
-			CustomField3:    order.CustomField3,
-			AvgTemp:         order.AvgTemp,
-			Source:          order.Source,
-			BuyerFullName:   order.BuyerFullName,
-			BuyerEmail:      order.BuyerEmail,
-			BuyerPhone:      order.BuyerPhone,
-			RecPhone:        order.RecPhone,
-			City:            order.City,
-			State:           order.State,
-			PostalCode:      order.PostalCode,
-			ItemSKU:         order.ItemSKU,
-			ItemUnitPrice:   order.ItemUnitPrice,
-			ItemName:        order.ItemName,
+			OrderNum:      order.OrderNum,
+			CustomField3:  order.CustomField3,
+			AvgTemp:       order.AvgTemp,
+			City:          order.City,
+			State:         order.State,
+			PostalCode:    order.PostalCode,
+			ItemSKU:       order.ItemSKU,
+			ItemUnitPrice: order.ItemUnitPrice,
+			ItemName:      order.ItemName,
 		}
 		// Where the magic happens
 		// find the geocode, check the temp, apply the data accordingly
