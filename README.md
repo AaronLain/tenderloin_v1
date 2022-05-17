@@ -18,7 +18,7 @@ go build main.go
 Now all you have to do is run the executable with the path of your source csv file.
 
 ```
-./main /path/to/your/csv
+./main /path/to/your/file.csv
 ```
 
 Step 4: Profit.
