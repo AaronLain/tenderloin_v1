@@ -209,7 +209,7 @@ func tempCheck(gc GeoCode) (float64, error) {
 	imp := "&units=imperial"
 
 	// 3 days of forecast instead of 5
-	count := "&cnt=24"
+	count := "&cnt=32"
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	// parse the URL
