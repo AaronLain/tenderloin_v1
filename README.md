@@ -2,7 +2,7 @@
 
 ## A specific solution to a very specific problem
 
-Tenderloin is a simple api to aid in the shipment of perishable product. It takes in a csv file of zip codes and assigns an ice profile for shipping based on the highest temperature of the destination zip during the transit window.
+Tenderloin is a simple api to aid in the shipment of perishable product. It takes in a csv file of zip codes and assigns an ice profile for shipping based on the highest temperature of the destination zip during the transit window. It uses [openweather's api](https://openweathermap.org/api) to retrieve the forecast so it is subject to their API rate limits, but it's free. You will have to sign up there to receive your free API key (no you can't use mine).
 
 To install: make sure you have golang installed, then clone this repo. You will have to install gocsv (a future update might forgo this, but it works for now) 
 
