@@ -33,14 +33,14 @@ func csvReader(s string) ([]*orders.OrderRecord, error) {
 	return records, err
 }
 
-func csvWriter(input string, o []*orders.OrderRecord) {
+func csvWriter(input string, days int, o []*orders.OrderRecord) {
 	// string manipulation because stuff is picky
 	output1 := strings.TrimSuffix(input, ".csv")
 	output2 := strings.TrimPrefix(output1, "./")
 	outputName := output2 + "_"
 
 	// get the temps and bring back the fresh data
-	newRecords, err := zip.CreateNewOrders(o)
+	newRecords, err := zip.CreateNewOrders(o, days)
 	if err != nil {
 		fmt.Println("Failed to get new records ::", err)
 	}
@@ -63,15 +63,19 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 
 func initializeCSV() {
 	localString := "./"
-	input := strings.Join(os.Args[1:], "")
-	fileName := localString + input
+	days, err := strconv.Atoi(os.Args[2])
+	if err != nil {
+		fmt.Println("Can't convert string: ", err)
+	}
+	inputFile := strings.Join(os.Args[1:], "")
+	fileName := localString + inputFile
 
 	records, err := csvReader(fileName)
 	if err != nil {
 		fmt.Println("Can't initialize reader ::", err)
 	}
 
-	csvWriter(fileName, records)
+	csvWriter(fileName, days, records)
 
 }
 

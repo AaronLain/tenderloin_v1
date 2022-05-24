@@ -117,7 +117,7 @@ func sleepAlert(t time.Duration) {
 	fmt.Println("Sleeping...")
 }
 
-func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecord, error) {
+func getWeatherData(orders []*o.OrderRecord, days int, geoZips [][]string) ([]o.OrderRecord, error) {
 	newOrders := []o.OrderRecord{}
 	for _, order := range orders {
 		thisOrder := o.OrderRecord{
@@ -141,7 +141,7 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 			}
 
 			// remote API temp check
-			temp, err := tempCheck(gz)
+			temp, err := tempCheck(gz, days)
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
 			}
@@ -157,7 +157,7 @@ func getWeatherData(orders []*o.OrderRecord, geoZips [][]string) ([]o.OrderRecor
 	return newOrders, nil
 }
 
-func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
+func CreateNewOrders(r []*o.OrderRecord, days int) ([]o.OrderRecord, error) {
 	orders, err := convertAllZips(r)
 	if err != nil {
 		fmt.Println("Zip conversion failure ::", err)
@@ -168,7 +168,7 @@ func CreateNewOrders(r []*o.OrderRecord) ([]o.OrderRecord, error) {
 		fmt.Println("Geocode Error occured! ::", err)
 	}
 
-	newOrders, err := getWeatherData(orders, geoZips)
+	newOrders, err := getWeatherData(orders, days, geoZips)
 	if err != nil {
 		fmt.Println("Coudn't get Weather Data ::", err)
 	}
@@ -194,7 +194,17 @@ func latitude(input string) string {
 	return output
 }
 
-func tempCheck(gc GeoCode) (float64, error) {
+func howManyDays(days int) string {
+	if days == 2 {
+		return "&cnt=16"
+	} else if days == 3 {
+		return "&cnt=24"
+	} else {
+		return "&cnt=32"
+	}
+}
+
+func tempCheck(gc GeoCode, days int) (float64, error) {
 	apiKey := o.GetKey()
 	weather := o.WeatherData{}
 
@@ -208,8 +218,8 @@ func tempCheck(gc GeoCode) (float64, error) {
 	// returns F instead of K
 	imp := "&units=imperial"
 
-	// 3 days of forecast instead of 5
-	count := "&cnt=32"
+	// number of days to forecast (count / 8 = days of forecast)
+	count := howManyDays(days)
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	// parse the URL
@@ -246,11 +256,11 @@ func tempCheck(gc GeoCode) (float64, error) {
 	return temp, nil
 }
 
-func findMaxTemp(r o.List) (float64, error) {
+func findMaxTemp(input o.List) (float64, error) {
 	// build an array of temps from the List
 	var nums []float64
 	var max float64
-	for _, v := range r {
+	for _, v := range input {
 		nums = append(nums, v.Main.Temp_max)
 	}
 
@@ -258,7 +268,7 @@ func findMaxTemp(r o.List) (float64, error) {
 	sort.Float64s(nums)
 
 	// we then set the max variable to the last number (highest) in nums
-	if r != nil {
+	if input != nil {
 		max = nums[len(nums)-1]
 	}
 
