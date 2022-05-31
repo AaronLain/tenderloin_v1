@@ -15,7 +15,7 @@ zip/GeoZip*.csv
 orders/api.go
 # Test binary, built with `go test -c`
 *.test
-
+orders/api.go 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 

@@ -3,12 +3,10 @@ package main
 import (
 	orders "ajl/tenderloin/orders"
 	zip "ajl/tenderloin/zip"
+	"flag"
 	"fmt"
-	"math/rand"
 	"net/http"
-
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -33,27 +31,21 @@ func csvReader(s string) ([]*orders.OrderRecord, error) {
 	return records, err
 }
 
-func csvWriter(input string, o []*orders.OrderRecord) {
+func csvWriter(input string, days int, o []*orders.OrderRecord) {
 	// string manipulation because stuff is picky
 	output1 := strings.TrimSuffix(input, ".csv")
-	output2 := strings.TrimPrefix(output1, "./")
-	outputName := output2 + "_"
+	outputName := strings.TrimPrefix(output1, "./")
 
 	// get the temps and bring back the fresh data
-	newRecords, err := zip.CreateNewOrders(o)
+	newRecords, err := zip.CreateNewOrders(o, days)
 	if err != nil {
 		fmt.Println("Failed to get new records ::", err)
 	}
 
-	// random number for filename creation
-	randomTime := rand.NewSource(time.Now().UnixNano())
-	randSuffix := randomTime.Int63()
-	str_randSuffix := strconv.FormatInt(randSuffix, 10)
-
 	// check to see if filename already exists before creating
 	if _, err := os.Stat(outputName); os.IsNotExist(err) {
 		//this puts the csv in the local file
-		file, err := os.Create(outputName + str_randSuffix + ".csv")
+		file, err := os.Create(outputName + ".csv")
 		if err != nil {
 			fmt.Println("Can't create csv ::", err)
 		}
@@ -63,15 +55,27 @@ func csvWriter(input string, o []*orders.OrderRecord) {
 
 func initializeCSV() {
 	localString := "./"
-	input := strings.Join(os.Args[1:], "")
-	fileName := localString + input
+	inputFile := strings.Join(os.Args[2:], "")
+	fileName := localString + inputFile
 
 	records, err := csvReader(fileName)
 	if err != nil {
 		fmt.Println("Can't initialize reader ::", err)
 	}
 
-	csvWriter(fileName, records)
+	daysPtr := flag.Int("days", 4, "days for forcast")
+
+	flag.Parse()
+
+	days := *daysPtr
+
+	fmt.Println("INITIALIZE Days: ", days)
+
+	now := time.Now().Format("20060102150405")
+
+	outputFileName := "Output_" + now
+
+	csvWriter(outputFileName, days, records)
 
 }
 
