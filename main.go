@@ -55,7 +55,9 @@ func csvWriter(input string, days int, o []*orders.OrderRecord) {
 
 func initializeCSV() {
 	localString := "./"
+
 	inputFile := strings.Join(os.Args[2:], "")
+
 	fileName := localString + inputFile
 
 	records, err := csvReader(fileName)
