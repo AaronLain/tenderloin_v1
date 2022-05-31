@@ -11,6 +11,7 @@ type OrderRecord struct {
 	ItemSKU       string  `csv:"Lineitem sku"`
 	ItemName      string  `csv:"Lineitem name"`
 	ItemUnitPrice string  `csv:"Lineitem price"`
+	PackageCode   string  `csv:"Service - Package Type"`
 }
 
 // Weather Data Structure
