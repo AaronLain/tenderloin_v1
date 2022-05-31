@@ -48,7 +48,6 @@ func FirstFiveZip(zip string) (string, error) {
 		}
 		counter++
 	}
-	fmt.Printf("zip: %v\n", zip)
 
 	return zip, nil
 }
@@ -62,7 +61,6 @@ func convertAllZips(order []*o.OrderRecord) ([]*o.OrderRecord, error) {
 			if err != nil {
 				fmt.Print("Zip code error ::", err)
 			}
-			fmt.Printf("zipFiveDig: %v\n", zipFiveDig)
 			v.PostalCode = zipFiveDig
 		}
 		continue
@@ -212,14 +210,13 @@ func tempCheck(gc GeoCode, days int) (float64, error) {
 	lat := latitude(gc.Lat)
 	lon := longitude(gc.Lon)
 
-	fmt.Printf("lat: %v", lat)
-	fmt.Printf("lon: %v", lon)
-
 	// returns F instead of K
 	imp := "&units=imperial"
 
 	// number of days to forecast (count / 8 = days of forecast)
 	count := howManyDays(days)
+	fmt.Println("Days: ", days)
+	fmt.Println("count: ", count)
 	link := "https://api.openweathermap.org/data/2.5/forecast?"
 
 	// parse the URL
