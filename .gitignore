@@ -11,6 +11,7 @@ Excel*
 zip/GeoZip3.csv
 Orders_*.csv
 zip/GeoZip*.csv
+main
 
 # Test binary, built with `go test -c`
 *.test

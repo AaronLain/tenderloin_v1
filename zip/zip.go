@@ -101,9 +101,9 @@ func profileAssignment(temp float64) string {
 		return "Profile 2"
 	} else if (temp > 75) && (temp <= 85) {
 		return "Profile 3"
-	} else if (temp > 85) && (temp <= 100) {
+	} else if (temp > 85) && (temp <= 98) {
 		return "Profile 4"
-	} else if temp > 100 {
+	} else if temp > 98 {
 		return "Profile 5"
 	} else {
 		return "No Temp Found"
