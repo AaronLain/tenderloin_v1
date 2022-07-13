@@ -101,9 +101,9 @@ func profileAssignment(temp float64) string {
 		return "Profile 2"
 	} else if (temp > 75) && (temp <= 85) {
 		return "Profile 3"
-	} else if (temp > 85) && (temp <= 100) {
+	} else if (temp > 85) && (temp <= 98) {
 		return "Profile 4"
-	} else if temp > 100 {
+	} else if temp > 98 {
 		return "Profile 5"
 	} else {
 		return "No Temp Found"
@@ -119,16 +119,13 @@ func getWeatherData(orders []*o.OrderRecord, days int, geoZips [][]string) ([]o.
 	newOrders := []o.OrderRecord{}
 	for _, order := range orders {
 		thisOrder := o.OrderRecord{
-			OrderNum:      order.OrderNum,
-			CustomField3:  order.CustomField3,
-			AvgTemp:       order.AvgTemp,
-			City:          order.City,
-			State:         order.State,
-			PostalCode:    order.PostalCode,
-			ItemSKU:       order.ItemSKU,
-			ItemUnitPrice: order.ItemUnitPrice,
-			ItemName:      order.ItemName,
-			PackageCode:   order.PackageCode,
+			OrderNum:     order.OrderNum,
+			CustomField3: order.CustomField3,
+			MaxTemp:      order.MaxTemp,
+			City:         order.City,
+			State:        order.State,
+			PostalCode:   order.PostalCode,
+			PackageCode:  order.PackageCode,
 		}
 		// Where the magic happens
 		// find the geocode, check the temp, apply the data accordingly
@@ -144,7 +141,7 @@ func getWeatherData(orders []*o.OrderRecord, days int, geoZips [][]string) ([]o.
 			if err != nil {
 				fmt.Println("No Temp Found ::", err)
 			}
-			thisOrder.AvgTemp = temp
+			thisOrder.MaxTemp = temp
 			thisOrder.PackageCode = order.PackageCode
 			thisOrder.CustomField3 = profileAssignment(temp)
 			newOrders = append(newOrders, thisOrder)

@@ -3,7 +3,7 @@ package orders
 type OrderRecord struct {
 	OrderNum      string  `csv:"Order - Number"`
 	CustomField3  string  `csv:"CustomField3"`
-	AvgTemp       float64 `csv:"AvgTemp"`
+	MaxTemp       float64 `csv:"MaxTemp"`
 	City          string  `csv:"Ship To - City"`
 	State         string  `csv:"Ship To - State"`
 	PostalCode    string  `csv:"Ship To - Postal Code"`
